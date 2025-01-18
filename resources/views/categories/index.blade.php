@@ -128,13 +128,15 @@
                                             </div>
                                             @if(!auth()->user()->isOperator())
                                             <div class="ms-auto me-3">
-                                                <a href="{{ route('categories.edit', $fonte->id) }}" class="btn btn-sm btn-outline-primary me-2" onclick="event.stopPropagation();">
+                                                <a href="{{ route('categories.edit', $fonte->id) }}" 
+                                                   class="btn btn-sm btn-outline-primary me-2" 
+                                                   onclick="confirmEdit(event, 'Deseja editar esta fonte?')">
                                                     <i class="fas fa-edit"></i>
                                                 </a>
                                                 <form action="{{ route('categories.destroy', $fonte->id) }}" method="POST" class="d-inline" onsubmit="event.stopPropagation();">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="event.stopPropagation(); return confirm('Tem certeza que deseja excluir esta categoria?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
@@ -158,13 +160,15 @@
                                                             </div>
                                                             @if(!auth()->user()->isOperator())
                                                             <div>
-                                                                <a href="{{ route('categories.edit', $bloco) }}" class="btn btn-sm btn-outline-primary me-2">
+                                                                <a href="{{ route('categories.edit', $bloco) }}" 
+                                                                   class="btn btn-sm btn-outline-primary me-2"
+                                                                   onclick="confirmEdit(event, 'Deseja editar este bloco?')">
                                                                     <i class="fas fa-edit"></i>
                                                                 </a>
                                                                 <form action="{{ route('categories.destroy', $bloco) }}" method="POST" class="d-inline">
                                                                     @csrf
                                                                     @method('DELETE')
-                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir esta categoria?')">
+                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
                                                                         <i class="fas fa-trash"></i>
                                                                     </button>
                                                                 </form>
@@ -186,13 +190,15 @@
                                                                             </div>
                                                                             @if(!auth()->user()->isOperator())
                                                                             <div>
-                                                                                <a href="{{ route('categories.edit', $grupo) }}" class="btn btn-sm btn-outline-primary me-2">
+                                                                                <a href="{{ route('categories.edit', $grupo) }}" 
+                                                                                   class="btn btn-sm btn-outline-primary me-2"
+                                                                                   onclick="confirmEdit(event, 'Deseja editar este grupo?')">
                                                                                     <i class="fas fa-edit"></i>
                                                                                 </a>
                                                                                 <form action="{{ route('categories.destroy', $grupo) }}" method="POST" class="d-inline">
                                                                                     @csrf
                                                                                     @method('DELETE')
-                                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir esta categoria?')">
+                                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
                                                                                         <i class="fas fa-trash"></i>
                                                                                     </button>
                                                                                 </form>
@@ -214,13 +220,15 @@
                                                                                             </div>
                                                                                             @if(!auth()->user()->isOperator())
                                                                                             <div>
-                                                                                                <a href="{{ route('categories.edit', $acao) }}" class="btn btn-sm btn-outline-primary me-2">
+                                                                                                <a href="{{ route('categories.edit', $acao) }}" 
+                                                                                                   class="btn btn-sm btn-outline-primary me-2"
+                                                                                                   onclick="confirmEdit(event, 'Deseja editar esta ação?')">
                                                                                                     <i class="fas fa-edit"></i>
                                                                                                 </a>
                                                                                                 <form action="{{ route('categories.destroy', $acao) }}" method="POST" class="d-inline">
                                                                                                     @csrf
                                                                                                     @method('DELETE')
-                                                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir esta categoria?')">
+                                                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
                                                                                                         <i class="fas fa-trash"></i>
                                                                                                     </button>
                                                                                                 </form>

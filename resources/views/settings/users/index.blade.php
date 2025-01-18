@@ -51,14 +51,16 @@
                                             </span>
                                         </td>
                                         <td class="text-end">
-                                            <a href="{{ route('users.edit', $user) }}" class="btn btn-sm btn-outline-primary">
+                                            <a href="{{ route('users.edit', $user) }}" 
+                                               class="btn btn-sm btn-outline-primary"
+                                               onclick="confirmEdit(event, 'Deseja editar este usuário?')">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             @if($user->id !== auth()->id())
                                                 <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir este usuário?')">
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir este usuário?')">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>

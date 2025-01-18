@@ -50,7 +50,8 @@
                                         <td>{{ $revenue->acao->name }}</td>
                                         <td class="text-end">
                                             <a href="{{ route('revenues.edit', $revenue) }}" 
-                                               class="btn btn-sm btn-outline-primary me-2">
+                                               class="btn btn-sm btn-outline-primary me-2"
+                                               onclick="confirmEdit(event, 'Deseja editar esta receita?')">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route('revenues.destroy', $revenue) }}" 
@@ -60,7 +61,7 @@
                                                 @method('DELETE')
                                                 <button type="submit" 
                                                         class="btn btn-sm btn-outline-danger"
-                                                        onclick="return confirm('Tem certeza que deseja excluir esta receita?')">
+                                                        onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta receita?')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>

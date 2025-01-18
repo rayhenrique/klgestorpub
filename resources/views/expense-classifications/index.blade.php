@@ -19,13 +19,6 @@
                 @endif
             </div>
 
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="table-responsive">
@@ -48,13 +41,15 @@
                                         <td>{{ $classification->description }}</td>
                                         @if(!auth()->user()->isOperator())
                                         <td>
-                                            <a href="{{ route('expense-classifications.edit', $classification->id) }}" class="btn btn-sm btn-outline-primary">
+                                            <a href="{{ route('expense-classifications.edit', $classification->id) }}" 
+                                               class="btn btn-sm btn-outline-primary"
+                                               onclick="confirmEdit(event, 'Deseja editar esta classificação?')">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route('expense-classifications.destroy', $classification->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Tem certeza que deseja excluir esta classificação?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta classificação?')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>

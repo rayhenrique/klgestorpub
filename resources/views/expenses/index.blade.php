@@ -15,13 +15,6 @@
                 </a>
             </div>
 
-            @if(session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            @endif
-
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <div class="table-responsive">
@@ -52,7 +45,8 @@
                                         <td>{{ $expense->acao->name }}</td>
                                         <td class="text-end">
                                             <a href="{{ route('expenses.edit', $expense) }}" 
-                                               class="btn btn-sm btn-outline-primary me-2">
+                                               class="btn btn-sm btn-outline-primary me-2"
+                                               onclick="confirmEdit(event, 'Deseja editar esta despesa?')">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             <form action="{{ route('expenses.destroy', $expense) }}" 
@@ -62,7 +56,7 @@
                                                 @method('DELETE')
                                                 <button type="submit" 
                                                         class="btn btn-sm btn-outline-danger"
-                                                        onclick="return confirm('Tem certeza que deseja excluir esta despesa?')">
+                                                        onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta despesa?')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </form>
