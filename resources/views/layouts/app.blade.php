@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-100">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{{ config('app.name') }} - Sistema de Gestão de Contas Públicas</title>
+
+    <!-- Fonts -->
+    <link rel="dns-prefetch" href="//fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Scripts -->
+    @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+</head>
+<body class="d-flex flex-column h-100">
+    <div id="app" class="flex-shrink-0">
+        @if (!Route::is('login') && !Route::is('register') && !Route::is('password.*'))
+            <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-sm">
+                <div class="container-fluid">
+                    <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
+                        <div class="brand-icon me-2">
+                            <i class="fas fa-landmark"></i>
+                        </div>
+                        {{ config('app.name') }}
+                    </a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <!-- Left Side Of Navbar -->
+                        <ul class="navbar-nav me-auto">
+                        </ul>
+
+                        <!-- Right Side Of Navbar -->
+                        <ul class="navbar-nav ms-auto align-items-center">
+                            @auth
+                                <li class="nav-item me-3">
+                                    <a class="nav-link" href="#" title="Notificações">
+                                        <i class="fas fa-bell"></i>
+                                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            3
+                                        </span>
+                                    </a>
+                                </li>
+                                <li class="nav-item dropdown">
+                                    <a id="navbarDropdown" class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
+                                        <div class="avatar-circle bg-white bg-opacity-25 me-2">
+                                            <i class="fas fa-user"></i>
+                                        </div>
+                                        {{ Auth::user()->name }}
+                                    </a>
+
+                                    <div class="dropdown-menu dropdown-menu-end shadow-sm" aria-labelledby="navbarDropdown">
+                                        <a class="dropdown-item" href="{{ route('profile.edit') }}">
+                                            <i class="fas fa-user-circle me-2"></i>Perfil
+                                        </a>
+                                        <div class="dropdown-divider"></div>
+                                        @if(Auth::user()->isAdmin())
+                                            <h6 class="dropdown-header">Administração</h6>
+                                            <a class="dropdown-item" href="{{ route('users.index') }}">
+                                                <i class="fas fa-users me-2"></i>Usuários
+                                            </a>
+                                            <a class="dropdown-item" href="{{ route('settings.city.edit') }}">
+                                                <i class="fas fa-city me-2"></i>Dados da Prefeitura
+                                            </a>
+                                            <div class="dropdown-divider"></div>
+                                        @endif
+                                        <a class="dropdown-item text-danger" href="{{ route('logout') }}"
+                                            onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                            <i class="fas fa-sign-out-alt me-2"></i>{{ __('Sair') }}
+                                        </a>
+                                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                            @csrf
+                                        </form>
+                                    </div>
+                                </li>
+                            @endauth
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        @endif
+
+        <main class="py-4">
+            @yield('content')
+        </main>
+    </div>
+
+    @if (!Route::is('login') && !Route::is('register') && !Route::is('password.*'))
+        @include('layouts.footer')
+    @endif
+    
+    @stack('scripts')
+</body>
+</html>
