@@ -13,7 +13,6 @@
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
                     <form action="{{ route('reports.generate') }}" method="GET" id="reportForm">
-                        @csrf
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <div class="mb-3">
@@ -110,10 +109,10 @@
                                     <button type="button" class="btn btn-primary" onclick="generateReport('view')">
                                         <i class="fas fa-eye me-2"></i>Visualizar
                                     </button>
-                                    <button type="button" class="btn btn-danger" disabled data-bs-toggle="tooltip" data-bs-placement="top" title="Disponível na versão 1.2.0">
+                                    <button type="button" class="btn btn-danger" onclick="generateReport('pdf')">
                                         <i class="fas fa-file-pdf me-2"></i>Exportar PDF
                                     </button>
-                                    <button type="button" class="btn btn-success" disabled data-bs-toggle="tooltip" data-bs-placement="top" title="Disponível na versão 1.2.0">
+                                    <button type="button" class="btn btn-success" onclick="generateReport('excel')">
                                         <i class="fas fa-file-excel me-2"></i>Exportar Excel
                                     </button>
                                 </div>
@@ -138,12 +137,6 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Inicializar tooltips do Bootstrap
-    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-    tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-    });
-
     const categorySelect = document.getElementById('category_id');
     const blockSelect = document.getElementById('block_id');
     const groupSelect = document.getElementById('group_id');
@@ -273,87 +266,144 @@ document.addEventListener('DOMContentLoaded', function() {
     // Trigger inicial para configurar a visibilidade da classificação de despesa
     reportTypeSelect.dispatchEvent(new Event('change'));
 
-    // Função para gerar o relatório
-    function generateReport(format) {
-        const form = document.getElementById('reportForm');
-        const reportContainer = document.getElementById('reportContainer');
-        const reportContent = document.getElementById('reportContent');
-
-        // Adicionar o formato ao formulário
-        const formatInput = document.createElement('input');
-        formatInput.type = 'hidden';
-        formatInput.name = 'format';
-        formatInput.value = format;
-        form.appendChild(formatInput);
-
-        // Fazer a requisição
-        fetch(form.action + '?' + new URLSearchParams(new FormData(form)))
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Erro ao gerar relatório');
-                }
-                return response.text();
-            })
-            .then(html => {
-                reportContent.innerHTML = html;
-                reportContainer.style.display = 'block';
-                window.scrollTo({
-                    top: reportContainer.offsetTop,
-                    behavior: 'smooth'
-                });
-            })
-            .catch(error => {
-                console.error('Erro:', error);
-                showError('Erro ao gerar o relatório. Por favor, tente novamente.');
-            })
-            .finally(() => {
-                // Remover o input de formato
-                form.removeChild(formatInput);
-            });
-    }
-
-    // Função para mostrar mensagens de erro
-    function showError(message) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('form'));
+    // Função para limpar todos os filtros
+    window.clearFilters = function() {
+        // Limpar tipo de relatório
+        document.getElementById('report_type').value = 'revenues';
         
-        // Auto-remover após 5 segundos
-        setTimeout(() => {
-            alertDiv.remove();
-        }, 5000);
-    }
-
-    // Função para limpar filtros
-    function clearFilters() {
-        // Resetar selects
-        categorySelect.value = '';
-        blockSelect.value = '';
-        groupSelect.value = '';
-        actionSelect.value = '';
-        reportTypeSelect.value = 'revenues';
-        expenseClassificationSelect.value = '';
+        // Limpar categorias
+        document.getElementById('category_id').value = '';
+        document.getElementById('block_id').value = '';
+        document.getElementById('block_id').disabled = true;
+        document.getElementById('group_id').value = '';
+        document.getElementById('group_id').disabled = true;
+        document.getElementById('action_id').value = '';
+        document.getElementById('action_id').disabled = true;
         
-        // Desabilitar selects dependentes
-        blockSelect.disabled = true;
-        groupSelect.disabled = true;
-        actionSelect.disabled = true;
+        // Limpar classificação de despesa
+        document.getElementById('expense_classification_id').value = '';
         
         // Resetar datas para o mês atual
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        
         document.getElementById('start_date').value = firstDay.toISOString().split('T')[0];
         document.getElementById('end_date').value = lastDay.toISOString().split('T')[0];
         
-        // Limpar área do relatório
+        // Resetar agrupamento
+        document.getElementById('group_by').value = 'daily';
+
+        // Limpar container do relatório se estiver visível
         const reportContainer = document.getElementById('reportContainer');
-        const reportContent = document.getElementById('reportContent');
-        reportContainer.style.display = 'none';
-        reportContent.innerHTML = '';
+        if (reportContainer) {
+            reportContainer.style.display = 'none';
+            const reportContent = document.getElementById('reportContent');
+            if (reportContent) {
+                reportContent.innerHTML = '';
+            }
+        }
+
+        // Mostrar notificação
+        showSuccess('Filtros limpos com sucesso!');
     }
 });
+
+function generateReport(format) {
+    const form = document.getElementById('reportForm');
+    const formData = new FormData(form);
+    formData.append('format', format);
+
+    if (format === 'view') {
+        // Para visualização, fazer uma requisição AJAX
+        const params = new URLSearchParams(formData);
+        const reportContent = document.getElementById('reportContent');
+        const reportContainer = document.getElementById('reportContainer');
+        
+        // Mostrar indicador de carregamento
+        reportContent.innerHTML = `
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Carregando...</span>
+                </div>
+                <p class="mt-2">Gerando relatório...</p>
+            </div>
+        `;
+        reportContainer.style.display = 'block';
+
+        fetch(form.action + '?' + params.toString(), {
+            method: 'GET',
+            headers: {
+                'Accept': 'text/html,application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin'
+        })
+        .then(async response => {
+            console.log('Status da resposta:', response.status);
+            console.log('Headers da resposta:', Object.fromEntries(response.headers.entries()));
+            
+            const responseText = await response.text();
+            console.log('Conteúdo da resposta:', responseText);
+            
+            if (!response.ok) {
+                throw new Error(responseText || `Erro HTTP: ${response.status}`);
+            }
+            
+            return responseText;
+        })
+        .then(html => {
+            console.log('Tamanho do HTML:', html.length);
+            if (!html.trim()) {
+                throw new Error('O relatório retornou vazio');
+            }
+
+            reportContent.innerHTML = html;
+            reportContainer.style.display = 'block';
+            reportContainer.scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(error => {
+            console.error('Erro detalhado:', error);
+            console.error('Stack trace:', error.stack);
+            reportContainer.style.display = 'none';
+            showError('Erro ao gerar o relatório. Por favor, tente novamente. Detalhes: ' + error.message);
+        });
+    } else {
+        try {
+            // Para PDF e Excel, submeter o formulário normalmente
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'format';
+            input.value = format;
+            form.appendChild(input);
+            
+            // Adicionar target _blank para abrir em nova aba
+            const originalTarget = form.target;
+            form.target = '_blank';
+            
+            form.submit();
+            
+            // Restaurar o target original e remover o input
+            form.target = originalTarget;
+            form.removeChild(input);
+        } catch (error) {
+            console.error('Erro ao exportar:', error);
+            showError('Erro ao exportar o relatório. Por favor, tente novamente.');
+        }
+    }
+}
+
+function showError(message) {
+    Swal.fire({
+        title: 'Erro',
+        text: message,
+        icon: 'error',
+        confirmButtonText: 'OK',
+        customClass: {
+            confirmButton: 'btn btn-primary'
+        }
+    });
+}
 </script>
 @endpush
 @endsection 
