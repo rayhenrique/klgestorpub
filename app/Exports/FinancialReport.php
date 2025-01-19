@@ -32,7 +32,7 @@ class FinancialReport implements FromCollection, WithHeadings, WithMapping, With
     {
         $headers = ['Período'];
 
-        if ($this->data['type'] === 'balance') {
+        if ($this->data['filters']['report_type'] === 'balance') {
             return array_merge($headers, ['Receitas', 'Despesas', 'Saldo']);
         }
 
@@ -41,13 +41,13 @@ class FinancialReport implements FromCollection, WithHeadings, WithMapping, With
 
     public function map($row): array
     {
-        $period = match($this->data['group_by']) {
+        $period = match($this->data['filters']['group_by']) {
             'daily' => Carbon::parse($row['period'])->format('d/m/Y'),
             'monthly' => Carbon::parse($row['period'])->format('m/Y'),
             'yearly' => $row['period'],
         };
 
-        if ($this->data['type'] === 'balance') {
+        if ($this->data['filters']['report_type'] === 'balance') {
             return [
                 $period,
                 'R$ ' . number_format($row['revenues'], 2, ',', '.'),
@@ -69,7 +69,7 @@ class FinancialReport implements FromCollection, WithHeadings, WithMapping, With
 
     public function styles(Worksheet $sheet)
     {
-        $lastColumn = $this->data['type'] === 'balance' ? 'D' : 'B';
+        $lastColumn = $this->data['filters']['report_type'] === 'balance' ? 'D' : 'B';
         $lastRow = $sheet->getHighestRow();
         $currentRow = 1;
 

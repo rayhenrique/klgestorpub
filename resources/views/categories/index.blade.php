@@ -7,6 +7,7 @@
     background-color: #f8f9fa !important;
     color: #212529 !important;
     padding: 1rem !important;
+    position: relative;
 }
 
 /* Estilos quando expandido */
@@ -38,44 +39,21 @@
 .category-header {
     display: flex;
     align-items: center;
+    flex: 1;
+}
+
+/* Ajustes nos botões de ação */
+.action-buttons {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
+    margin-left: auto;
+    position: absolute;
+    right: 3rem;
 }
 
-/* Estilos para os cards internos */
-.card-header {
-    background-color: #fff !important;
-    color: #212529 !important;
-    padding: 0.75rem 1rem !important;
-    border-bottom: 1px solid rgba(0,0,0,.125) !important;
-}
-
-/* Estilos para os itens dentro do accordion */
-.accordion-body .card {
-    background-color: #ffffff !important;
-    border: 1px solid rgba(0,0,0,.125) !important;
-    margin-bottom: 0.5rem !important;
-}
-
-/* Ajuste para os badges */
-.badge {
-    font-weight: 500 !important;
-    padding: 0.4em 0.6em !important;
-}
-
-.badge.bg-secondary { background-color: #6c757d !important; }
-.badge.bg-info { background-color: #0dcaf0 !important; }
-.badge.bg-warning { background-color: #ffc107 !important; color: #000 !important; }
-.badge.bg-success { background-color: #198754 !important; }
-
-/* Estilos para os botões de ação */
-.btn-sm {
-    padding: 0.25rem 0.5rem !important;
-    font-size: 0.875rem !important;
-    border-radius: 0.2rem !important;
-}
-
-.btn-outline-primary:hover, .btn-outline-danger:hover {
-    color: #fff !important;
+.action-buttons form {
+    margin: 0;
 }
 
 /* Ajustes de espaçamento */
@@ -85,6 +63,25 @@
 
 .card-body {
     padding: 1rem !important;
+}
+
+/* Ajuste para o container de fonte */
+.fonte-container {
+    margin-bottom: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+}
+
+/* Ajuste para o cabeçalho de fonte */
+.fonte-header {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Ajuste para o conteúdo de fonte */
+.fonte-content {
+    padding: 1rem;
 }
 </style>
 
@@ -115,143 +112,137 @@
 
             <div class="card border-0 shadow-sm">
                 <div class="card-body">
-                    <div class="accordion" id="categoriesAccordion">
-                        @foreach($fontes as $fonte)
-                            <div class="accordion-item">
-                                <h2 class="accordion-header" id="fonte{{ $fonte->id }}">
-                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSource{{ $fonte->id }}" aria-expanded="false" aria-controls="collapseSource{{ $fonte->id }}">
-                                        <div class="d-flex justify-content-between align-items-center w-100">
-                                            <div class="category-header">
-                                                <i class="fas fa-folder me-2"></i>
-                                                <span>{{ $fonte->name }}</span>
-                                                <span class="badge bg-secondary ms-2">Fonte</span>
-                                            </div>
-                                            @if(!auth()->user()->isOperator())
-                                            <div class="ms-auto me-3">
-                                                <a href="{{ route('categories.edit', $fonte->id) }}" 
-                                                   class="btn btn-sm btn-outline-primary me-2" 
-                                                   onclick="confirmEdit(event, 'Deseja editar esta fonte?')">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                                <form action="{{ route('categories.destroy', $fonte->id) }}" method="POST" class="d-inline" onsubmit="event.stopPropagation();">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
-                                                        <i class="fas fa-trash"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                            @endif
-                                        </div>
-                                    </button>
-                                </h2>
-                                <div id="collapseSource{{ $fonte->id }}" class="accordion-collapse collapse" data-bs-parent="#categoriesAccordion">
-                                    <div class="accordion-body">
-                                        <!-- Blocos -->
-                                        <div class="ms-4">
-                                            @foreach($fonte->children as $bloco)
-                                                <div class="card mb-2">
-                                                    <div class="card-header">
-                                                        <div class="d-flex justify-content-between align-items-center">
-                                                            <div>
-                                                                <i class="fas fa-cube me-2"></i>
-                                                                {{ $bloco->name }}
-                                                                <span class="badge bg-info ms-2">Bloco</span>
-                                                            </div>
-                                                            @if(!auth()->user()->isOperator())
-                                                            <div>
-                                                                <a href="{{ route('categories.edit', $bloco) }}" 
-                                                                   class="btn btn-sm btn-outline-primary me-2"
-                                                                   onclick="confirmEdit(event, 'Deseja editar este bloco?')">
-                                                                    <i class="fas fa-edit"></i>
-                                                                </a>
-                                                                <form action="{{ route('categories.destroy', $bloco) }}" method="POST" class="d-inline">
-                                                                    @csrf
-                                                                    @method('DELETE')
-                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
-                                                                        <i class="fas fa-trash"></i>
-                                                                    </button>
-                                                                </form>
-                                                            </div>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                    <div class="card-body p-3">
-                                                        <!-- Grupos -->
-                                                        <div class="ms-3">
-                                                            @foreach($bloco->children as $grupo)
-                                                                <div class="card mb-2">
-                                                                    <div class="card-header">
-                                                                        <div class="d-flex justify-content-between align-items-center">
-                                                                            <div>
-                                                                                <i class="fas fa-layer-group me-2"></i>
-                                                                                {{ $grupo->name }}
-                                                                                <span class="badge bg-warning ms-2">Grupo</span>
-                                                                            </div>
-                                                                            @if(!auth()->user()->isOperator())
-                                                                            <div>
-                                                                                <a href="{{ route('categories.edit', $grupo) }}" 
-                                                                                   class="btn btn-sm btn-outline-primary me-2"
-                                                                                   onclick="confirmEdit(event, 'Deseja editar este grupo?')">
-                                                                                    <i class="fas fa-edit"></i>
-                                                                                </a>
-                                                                                <form action="{{ route('categories.destroy', $grupo) }}" method="POST" class="d-inline">
-                                                                                    @csrf
-                                                                                    @method('DELETE')
-                                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
-                                                                                        <i class="fas fa-trash"></i>
-                                                                                    </button>
-                                                                                </form>
-                                                                            </div>
-                                                                            @endif
-                                                                        </div>
-                                                                    </div>
-                                                                    <div class="card-body p-3">
-                                                                        <!-- Ações -->
-                                                                        <div class="ms-3">
-                                                                            @foreach($grupo->children as $acao)
-                                                                                <div class="card mb-2">
-                                                                                    <div class="card-header">
-                                                                                        <div class="d-flex justify-content-between align-items-center">
-                                                                                            <div>
-                                                                                                <i class="fas fa-play me-2"></i>
-                                                                                                {{ $acao->name }}
-                                                                                                <span class="badge bg-success ms-2">Ação</span>
-                                                                                            </div>
-                                                                                            @if(!auth()->user()->isOperator())
-                                                                                            <div>
-                                                                                                <a href="{{ route('categories.edit', $acao) }}" 
-                                                                                                   class="btn btn-sm btn-outline-primary me-2"
-                                                                                                   onclick="confirmEdit(event, 'Deseja editar esta ação?')">
-                                                                                                    <i class="fas fa-edit"></i>
-                                                                                                </a>
-                                                                                                <form action="{{ route('categories.destroy', $acao) }}" method="POST" class="d-inline">
-                                                                                                    @csrf
-                                                                                                    @method('DELETE')
-                                                                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
-                                                                                                        <i class="fas fa-trash"></i>
-                                                                                                    </button>
-                                                                                                </form>
-                                                                                            </div>
-                                                                                            @endif
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            @endforeach
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            @endforeach
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            @endforeach
-                                        </div>
+                    @foreach($fontes as $fonte)
+                        <div class="fonte-container">
+                            <div class="fonte-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="category-header">
+                                        <i class="fas fa-folder me-2"></i>
+                                        <span>{{ $fonte->name }}</span>
+                                        <span class="badge bg-secondary ms-2">Fonte</span>
                                     </div>
+                                    @if(!auth()->user()->isOperator())
+                                    <div class="action-buttons">
+                                        <a href="{{ route('categories.edit', $fonte->id) }}" 
+                                           class="btn btn-sm btn-outline-primary"
+                                           onclick="confirmEdit(event, 'Deseja editar esta fonte?')">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form action="{{ route('categories.destroy', $fonte->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    @endif
                                 </div>
                             </div>
-                        @endforeach
-                    </div>
+                            <div class="fonte-content">
+                                <!-- Blocos -->
+                                <div class="ms-4">
+                                    @foreach($fonte->children as $bloco)
+                                        <div class="card mb-2">
+                                            <div class="card-header">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <i class="fas fa-cube me-2"></i>
+                                                        {{ $bloco->name }}
+                                                        <span class="badge bg-info ms-2">Bloco</span>
+                                                    </div>
+                                                    @if(!auth()->user()->isOperator())
+                                                    <div class="action-buttons">
+                                                        <a href="{{ route('categories.edit', $bloco) }}" 
+                                                           class="btn btn-sm btn-outline-primary"
+                                                           onclick="confirmEdit(event, 'Deseja editar este bloco?')">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <form action="{{ route('categories.destroy', $bloco) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    </div>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                            <div class="card-body p-3">
+                                                <!-- Grupos -->
+                                                <div class="ms-3">
+                                                    @foreach($bloco->children as $grupo)
+                                                        <div class="card mb-2">
+                                                            <div class="card-header">
+                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                    <div>
+                                                                        <i class="fas fa-layer-group me-2"></i>
+                                                                        {{ $grupo->name }}
+                                                                        <span class="badge bg-warning ms-2">Grupo</span>
+                                                                    </div>
+                                                                    @if(!auth()->user()->isOperator())
+                                                                    <div class="action-buttons">
+                                                                        <a href="{{ route('categories.edit', $grupo) }}" 
+                                                                           class="btn btn-sm btn-outline-primary"
+                                                                           onclick="confirmEdit(event, 'Deseja editar este grupo?')">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </a>
+                                                                        <form action="{{ route('categories.destroy', $grupo) }}" method="POST" class="d-inline">
+                                                                            @csrf
+                                                                            @method('DELETE')
+                                                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
+                                                                                <i class="fas fa-trash"></i>
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+                                                                    @endif
+                                                                </div>
+                                                            </div>
+                                                            <div class="card-body p-3">
+                                                                <!-- Ações -->
+                                                                <div class="ms-3">
+                                                                    @foreach($grupo->children as $acao)
+                                                                        <div class="card mb-2">
+                                                                            <div class="card-header">
+                                                                                <div class="d-flex justify-content-between align-items-center">
+                                                                                    <div>
+                                                                                        <i class="fas fa-play me-2"></i>
+                                                                                        {{ $acao->name }}
+                                                                                        <span class="badge bg-success ms-2">Ação</span>
+                                                                                    </div>
+                                                                                    @if(!auth()->user()->isOperator())
+                                                                                    <div class="action-buttons">
+                                                                                        <a href="{{ route('categories.edit', $acao) }}" 
+                                                                                           class="btn btn-sm btn-outline-primary"
+                                                                                           onclick="confirmEdit(event, 'Deseja editar esta ação?')">
+                                                                                            <i class="fas fa-edit"></i>
+                                                                                        </a>
+                                                                                        <form action="{{ route('categories.destroy', $acao) }}" method="POST" class="d-inline">
+                                                                                            @csrf
+                                                                                            @method('DELETE')
+                                                                                            <button type="submit" class="btn btn-sm btn-outline-danger" onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta categoria?')">
+                                                                                                <i class="fas fa-trash"></i>
+                                                                                            </button>
+                                                                                        </form>
+                                                                                    </div>
+                                                                                    @endif
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </main>

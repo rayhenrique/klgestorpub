@@ -37,4 +37,21 @@ Para suporte técnico e comercial, entre em contato através do email: rayhenriq
 
 Este software é proprietário e está protegido por direitos autorais. O uso, cópia, modificação ou distribuição deste software sem a devida autorização é estritamente proibido.
 
-Todos os direitos reservados © 2024 KL Gestor Pub
+## Changelog
+
+### Versão 1.0.0 (15/03/2024)
+- Lançamento inicial do sistema
+- Implementação do controle de despesas e receitas
+- Sistema de categorias hierárquicas
+- Relatórios financeiros básicos
+- Sistema de autenticação e autorização
+- Configurações por município
+
+### Versão 1.1.0 (Atual)
+- Adição de logs de auditoria
+- Melhorias na interface do usuário
+- Implementação de relatórios avançados
+- Sistema de backup automático
+- Documentação completa do sistema
+
+Todos os direitos reservados © 2024 KL Gestor Pub v1.1.0

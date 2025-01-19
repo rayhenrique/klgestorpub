@@ -61,10 +61,19 @@ class CategoryController extends Controller
                 ->withInput();
         }
 
-        Category::create($request->all());
+        $category = Category::create($request->all());
 
-        return redirect()->route('categories.index')
-            ->with('success', 'Categoria criada com sucesso.');
+        $typeLabel = match($category->type) {
+            'fonte' => 'Fonte',
+            'bloco' => 'Bloco',
+            'grupo' => 'Grupo',
+            'acao' => 'Ação',
+            default => 'Categoria'
+        };
+
+        return redirect()
+            ->route('categories.index')
+            ->with('success', "{$typeLabel} '{$category->name}' foi criada com sucesso!");
     }
 
     public function edit(Category $category)
@@ -117,21 +126,44 @@ class CategoryController extends Controller
 
         $category->update($request->all());
 
-        return redirect()->route('categories.index')
-            ->with('success', 'Categoria atualizada com sucesso.');
+        $typeLabel = match($category->type) {
+            'fonte' => 'Fonte',
+            'bloco' => 'Bloco',
+            'grupo' => 'Grupo',
+            'acao' => 'Ação',
+            default => 'Categoria'
+        };
+
+        return redirect()
+            ->route('categories.index')
+            ->with('success', "{$typeLabel} '{$category->name}' foi atualizada com sucesso!");
     }
 
     public function destroy(Category $category)
     {
+        $name = $category->name;
+        $typeLabel = match($category->type) {
+            'fonte' => 'Fonte',
+            'bloco' => 'Bloco',
+            'grupo' => 'Grupo',
+            'acao' => 'Ação',
+            default => 'Categoria'
+        };
+
         $category->delete();
-        return redirect()->route('categories.index')
-            ->with('success', 'Categoria excluída com sucesso.');
+
+        return redirect()
+            ->route('categories.index')
+            ->with('success', "{$typeLabel} '{$name}' foi excluída com sucesso!");
     }
 
     // Métodos para AJAX
     public function getChildren(Category $category)
     {
-        $children = $category->getActiveChildren();
+        $children = $category->children()
+            ->where('active', true)
+            ->get(['id', 'name', 'type']);
+
         return response()->json($children);
     }
 

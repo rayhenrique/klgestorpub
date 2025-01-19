@@ -92,4 +92,8 @@ Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     Route::get('audit/{log}', [AuditLogController::class, 'show'])->name('audit.show');
 });
 
+// Rotas para carregar categorias filhas
+Route::get('/api/categories/{category}/children', [CategoryController::class, 'getChildren'])->name('api.categories.children');
+Route::get('/api/categories/available-parents', [CategoryController::class, 'getAvailableParents'])->name('api.categories.parents');
+
 // Middleware para verificar se é admin

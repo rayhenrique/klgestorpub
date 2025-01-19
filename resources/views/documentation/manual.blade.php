@@ -197,8 +197,42 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Histórico de Atualizações -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#atualizacoes">
+                                    8. Histórico de Atualizações
+                                </button>
+                            </h2>
+                            <div id="atualizacoes" class="accordion-collapse collapse" data-bs-parent="#manualAccordion">
+                                <div class="accordion-body">
+                                    <h5>8.1. Versão 1.0.0 (15/03/2024)</h5>
+                                    <ul>
+                                        <li>Lançamento inicial do sistema</li>
+                                        <li>Implementação do controle de despesas e receitas</li>
+                                        <li>Sistema de categorias hierárquicas</li>
+                                        <li>Relatórios financeiros básicos</li>
+                                        <li>Sistema de autenticação e autorização</li>
+                                        <li>Configurações por município</li>
+                                    </ul>
+
+                                    <h5>8.2. Versão 1.1.0 (Atual)</h5>
+                                    <ul>
+                                        <li>Adição de logs de auditoria</li>
+                                        <li>Melhorias na interface do usuário</li>
+                                        <li>Implementação de relatórios avançados</li>
+                                        <li>Sistema de backup automático</li>
+                                        <li>Documentação completa do sistema</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
+            <div class="text-center mt-4 text-muted">
+                <small>KL Gestor Pub v1.1.0</small>
             </div>
         </main>
     </div>
