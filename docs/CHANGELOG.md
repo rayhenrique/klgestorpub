@@ -10,11 +10,4 @@
 ### Corrigido
 - Correção na exibição dos valores monetários nos relatórios Excel
 - Ajuste na formatação dos valores e alinhamento nas planilhas
-
-### Alterado
-- Desabilitado temporariamente os botões de exportação para PDF e Excel nos relatórios
-- Mantida apenas a opção de visualização em tela dos relatórios
-
-### Próxima Versão (1.2.0)
-- Implementação da exportação de relatórios para PDF
-- Implementação da exportação de relatórios para Excel 
+- Correção na geração de relatórios em PDF com configurações otimizadas 
