@@ -9,11 +9,37 @@
                 </p>
             </div>
             <div>
-                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="window.print()">
+                <button type="button" class="btn btn-sm btn-outline-secondary me-2" onclick="window.print()">
                     <i class="fas fa-print me-1"></i>Imprimir
                 </button>
+                <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-filter-circle-xmark me-1"></i>Limpar Filtros
+                </a>
             </div>
         </div>
+
+        @if(!empty($filters['category_id']) || !empty($filters['block_id']) || !empty($filters['group_id']) || !empty($filters['action_id']) || !empty($filters['expense_classification_id']))
+            <div class="alert alert-info mt-3 mb-0">
+                <h6 class="alert-heading"><i class="fas fa-filter me-2"></i>Filtros Aplicados:</h6>
+                <ul class="list-unstyled mb-0">
+                    @if(!empty($filters['category_id']))
+                        <li><strong>Fonte:</strong> {{ \App\Models\Category::find($filters['category_id'])->name }}</li>
+                    @endif
+                    @if(!empty($filters['block_id']))
+                        <li><strong>Bloco:</strong> {{ \App\Models\Category::find($filters['block_id'])->name }}</li>
+                    @endif
+                    @if(!empty($filters['group_id']))
+                        <li><strong>Grupo:</strong> {{ \App\Models\Category::find($filters['group_id'])->name }}</li>
+                    @endif
+                    @if(!empty($filters['action_id']))
+                        <li><strong>Ação:</strong> {{ \App\Models\Category::find($filters['action_id'])->name }}</li>
+                    @endif
+                    @if(!empty($filters['expense_classification_id']))
+                        <li><strong>Classificação de Despesa:</strong> {{ \App\Models\ExpenseClassification::find($filters['expense_classification_id'])->name }}</li>
+                    @endif
+                </ul>
+            </div>
+        @endif
     </div>
 
     <div class="report-table">

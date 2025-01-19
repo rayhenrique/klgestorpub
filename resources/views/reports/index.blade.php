@@ -103,6 +103,9 @@
 
                             <div class="col-12">
                                 <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <button type="button" class="btn btn-secondary" onclick="clearFilters()">
+                                        <i class="fas fa-filter-circle-xmark me-2"></i>Limpar Filtros
+                                    </button>
                                     <button type="button" class="btn btn-primary" onclick="generateReport('view')">
                                         <i class="fas fa-eye me-2"></i>Visualizar
                                     </button>
@@ -262,6 +265,48 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Trigger inicial para configurar a visibilidade da classificação de despesa
     reportTypeSelect.dispatchEvent(new Event('change'));
+
+    // Função para limpar todos os filtros
+    window.clearFilters = function() {
+        // Limpar tipo de relatório
+        document.getElementById('report_type').value = 'revenues';
+        
+        // Limpar categorias
+        document.getElementById('category_id').value = '';
+        document.getElementById('block_id').value = '';
+        document.getElementById('block_id').disabled = true;
+        document.getElementById('group_id').value = '';
+        document.getElementById('group_id').disabled = true;
+        document.getElementById('action_id').value = '';
+        document.getElementById('action_id').disabled = true;
+        
+        // Limpar classificação de despesa
+        document.getElementById('expense_classification_id').value = '';
+        
+        // Resetar datas para o mês atual
+        const now = new Date();
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        
+        document.getElementById('start_date').value = firstDay.toISOString().split('T')[0];
+        document.getElementById('end_date').value = lastDay.toISOString().split('T')[0];
+        
+        // Resetar agrupamento
+        document.getElementById('group_by').value = 'daily';
+
+        // Limpar container do relatório se estiver visível
+        const reportContainer = document.getElementById('reportContainer');
+        if (reportContainer) {
+            reportContainer.style.display = 'none';
+            const reportContent = document.getElementById('reportContent');
+            if (reportContent) {
+                reportContent.innerHTML = '';
+            }
+        }
+
+        // Mostrar notificação
+        showSuccess('Filtros limpos com sucesso!');
+    }
 });
 
 function generateReport(format) {

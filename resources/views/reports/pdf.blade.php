@@ -80,6 +80,26 @@
         .page-break {
             page-break-after: always;
         }
+        .filters-info {
+            margin: 15px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .filters-info h3 {
+            font-size: 14px;
+            margin: 0 0 10px 0;
+            color: #0d6efd;
+        }
+        .filters-info ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .filters-info li {
+            margin: 3px 0;
+        }
     </style>
 </head>
 <body>
@@ -116,8 +136,32 @@
     <div class="header">
         <h1>{{ $metadata['type'] }}</h1>
         <p>{{ $metadata['period'] }}</p>
+        <p>Agrupamento: {{ $metadata['group_by'] }}</p>
         <p>Gerado em: {{ $metadata['generated_at']->format('d/m/Y H:i:s') }}</p>
     </div>
+
+    @if(!empty($filters['category_id']) || !empty($filters['block_id']) || !empty($filters['group_id']) || !empty($filters['action_id']) || !empty($filters['expense_classification_id']))
+        <div class="filters-info">
+            <h3>Filtros Aplicados</h3>
+            <ul>
+                @if(!empty($filters['category_id']))
+                    <li><strong>Fonte:</strong> {{ \App\Models\Category::find($filters['category_id'])->name }}</li>
+                @endif
+                @if(!empty($filters['block_id']))
+                    <li><strong>Bloco:</strong> {{ \App\Models\Category::find($filters['block_id'])->name }}</li>
+                @endif
+                @if(!empty($filters['group_id']))
+                    <li><strong>Grupo:</strong> {{ \App\Models\Category::find($filters['group_id'])->name }}</li>
+                @endif
+                @if(!empty($filters['action_id']))
+                    <li><strong>Ação:</strong> {{ \App\Models\Category::find($filters['action_id'])->name }}</li>
+                @endif
+                @if(!empty($filters['expense_classification_id']))
+                    <li><strong>Classificação de Despesa:</strong> {{ \App\Models\ExpenseClassification::find($filters['expense_classification_id'])->name }}</li>
+                @endif
+            </ul>
+        </div>
+    @endif
 
     <table>
         <thead>
@@ -147,7 +191,7 @@
                     @if($filters['report_type'] === 'balance')
                         <td class="text-end text-success">R$ {{ number_format($item['revenues'], 2, ',', '.') }}</td>
                         <td class="text-end text-danger">R$ {{ number_format($item['expenses'], 2, ',', '.') }}</td>
-                        <td class="text-end {{ $item['balance'] >= 0 ? 'text-primary' : 'text-danger' }}">
+                        <td class="text-end {{ $item['balance'] >= 0 ? 'text-success' : 'text-danger' }}">
                             R$ {{ number_format(abs($item['balance']), 2, ',', '.') }}
                         </td>
                     @else
@@ -165,34 +209,27 @@
             @endforelse
         </tbody>
         @if($items->count() > 0)
-            <tfoot>
-                <tr>
-                    <td>Total</td>
-                    @if($filters['report_type'] === 'balance')
-                        <td class="text-end text-success">
-                            R$ {{ number_format($items->sum('revenues'), 2, ',', '.') }}
-                        </td>
-                        <td class="text-end text-danger">
-                            R$ {{ number_format($items->sum('expenses'), 2, ',', '.') }}
-                        </td>
-                        @php
-                            $totalBalance = $items->sum('revenues') - $items->sum('expenses');
-                        @endphp
-                        <td class="text-end {{ $totalBalance >= 0 ? 'text-primary' : 'text-danger' }}">
-                            R$ {{ number_format(abs($totalBalance), 2, ',', '.') }}
-                        </td>
-                    @else
-                        <td class="text-end {{ $filters['report_type'] === 'revenues' ? 'text-success' : 'text-danger' }}">
-                            R$ {{ number_format($items->sum('total'), 2, ',', '.') }}
-                        </td>
-                    @endif
-                </tr>
-            </tfoot>
+        <tfoot>
+            <tr>
+                <td><strong>Total</strong></td>
+                @if($filters['report_type'] === 'balance')
+                    <td class="text-end text-success"><strong>R$ {{ number_format($items->sum('revenues'), 2, ',', '.') }}</strong></td>
+                    <td class="text-end text-danger"><strong>R$ {{ number_format($items->sum('expenses'), 2, ',', '.') }}</strong></td>
+                    <td class="text-end {{ $items->sum('balance') >= 0 ? 'text-success' : 'text-danger' }}">
+                        <strong>R$ {{ number_format(abs($items->sum('balance')), 2, ',', '.') }}</strong>
+                    </td>
+                @else
+                    <td class="text-end {{ $filters['report_type'] === 'revenues' ? 'text-success' : 'text-danger' }}">
+                        <strong>R$ {{ number_format($items->sum('total'), 2, ',', '.') }}</strong>
+                    </td>
+                @endif
+            </tr>
+        </tfoot>
         @endif
     </table>
 
     <div class="footer">
-        {{ config('app.name') }} - Relatório gerado em {{ $metadata['generated_at']->format('d/m/Y H:i:s') }}
+        {{ $citySettings ? $citySettings->city_hall_name : 'Sistema de Gestão Financeira' }} - Relatório gerado em {{ $metadata['generated_at']->format('d/m/Y H:i:s') }}
     </div>
 </body>
 </html> 

@@ -60,6 +60,8 @@ class ReportController extends Controller
 
     private function prepareReportData($filters)
     {
+        \Log::info('Iniciando prepareReportData com filtros:', $filters);
+
         $groupByFormat = match($filters['group_by']) {
             'daily' => '%Y-%m-%d',
             'monthly' => '%Y-%m',
@@ -74,38 +76,35 @@ class ReportController extends Controller
         }
 
         // Aplicar filtros de categoria
-        if (!empty($filters['category_id']) || !empty($filters['block_id']) || !empty($filters['group_id']) || !empty($filters['action_id'])) {
-            $query->whereHas('category', function ($q) use ($filters) {
-                if (!empty($filters['action_id'])) {
-                    $q->where('id', $filters['action_id']);
-                } elseif (!empty($filters['group_id'])) {
-                    $q->where(function($sq) use ($filters) {
-                        $sq->where('id', $filters['group_id'])
-                           ->orWhere('parent_id', $filters['group_id']);
-                    });
-                } elseif (!empty($filters['block_id'])) {
-                    $q->where(function($sq) use ($filters) {
-                        $sq->where('id', $filters['block_id'])
-                           ->orWhere('parent_id', $filters['block_id'])
-                           ->orWhereIn('parent_id', function($subsq) use ($filters) {
-                               $subsq->select('id')
-                                    ->from('categories')
-                                    ->where('parent_id', $filters['block_id']);
-                           });
-                    });
-                } elseif (!empty($filters['category_id'])) {
-                    $q->where(function($sq) use ($filters) {
-                        $sq->where('id', $filters['category_id'])
-                           ->orWhere('parent_id', $filters['category_id'])
-                           ->orWhereIn('parent_id', function($subsq) use ($filters) {
-                               $subsq->select('id')
-                                    ->from('categories')
-                                    ->where('parent_id', $filters['category_id']);
-                           });
-                    });
-                }
-            });
+        if (!empty($filters['action_id'])) {
+            $query->where('category_id', $filters['action_id']);
+        } elseif (!empty($filters['group_id'])) {
+            $categoryIds = Category::where('id', $filters['group_id'])
+                ->orWhere('parent_id', $filters['group_id'])
+                ->pluck('id');
+            $query->whereIn('category_id', $categoryIds);
+        } elseif (!empty($filters['block_id'])) {
+            $groupIds = Category::where('parent_id', $filters['block_id'])->pluck('id');
+            $categoryIds = Category::whereIn('parent_id', $groupIds)
+                ->orWhere('id', $filters['block_id'])
+                ->orWhereIn('id', $groupIds)
+                ->pluck('id');
+            $query->whereIn('category_id', $categoryIds);
+        } elseif (!empty($filters['category_id'])) {
+            $blockIds = Category::where('parent_id', $filters['category_id'])->pluck('id');
+            $groupIds = Category::whereIn('parent_id', $blockIds)->pluck('id');
+            $categoryIds = Category::whereIn('parent_id', $groupIds)
+                ->orWhere('id', $filters['category_id'])
+                ->orWhereIn('id', $blockIds)
+                ->orWhereIn('id', $groupIds)
+                ->pluck('id');
+            $query->whereIn('category_id', $categoryIds);
         }
+
+        \Log::info('Query após filtros de categoria:', [
+            'sql' => $query->toSql(),
+            'bindings' => $query->getBindings()
+        ]);
 
         if (!empty($filters['expense_classification_id']) && $filters['report_type'] === 'expenses') {
             $query->where('expense_classification_id', $filters['expense_classification_id']);
@@ -113,11 +112,6 @@ class ReportController extends Controller
 
         // Agrupar dados
         if ($filters['report_type'] !== 'balance') {
-            \Log::info('Query SQL:', [
-                'sql' => $query->toSql(),
-                'bindings' => $query->getBindings()
-            ]);
-
             $items = $query->select(
                 DB::raw("DATE_FORMAT(date, '$groupByFormat') as period"),
                 DB::raw('SUM(amount) as total')
@@ -126,18 +120,14 @@ class ReportController extends Controller
             ->orderBy('period')
             ->get();
 
-            \Log::info('Resultados:', [
+            \Log::info('Resultados da query:', [
+                'count' => $items->count(),
                 'items' => $items->toArray()
             ]);
         } else {
             // Para balanço, separar receitas e despesas
             $revenues = clone $query;
             $expenses = clone $query;
-
-            \Log::info('Query Receitas:', [
-                'sql' => $revenues->toSql(),
-                'bindings' => $revenues->getBindings()
-            ]);
 
             $revenueData = $revenues->where('type', 'revenue')
                 ->select(
@@ -148,11 +138,6 @@ class ReportController extends Controller
                 ->get()
                 ->keyBy('period');
 
-            \Log::info('Query Despesas:', [
-                'sql' => $expenses->toSql(),
-                'bindings' => $expenses->getBindings()
-            ]);
-
             $expenseData = $expenses->where('type', 'expense')
                 ->select(
                     DB::raw("DATE_FORMAT(date, '$groupByFormat') as period"),
@@ -162,7 +147,9 @@ class ReportController extends Controller
                 ->get()
                 ->keyBy('period');
 
-            \Log::info('Resultados:', [
+            \Log::info('Resultados do balanço:', [
+                'receitas_count' => $revenueData->count(),
+                'despesas_count' => $expenseData->count(),
                 'receitas' => $revenueData->toArray(),
                 'despesas' => $expenseData->toArray()
             ]);
