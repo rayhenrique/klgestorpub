@@ -13,16 +13,15 @@
    - Grupo
    - Ação
    - Classificação de Despesa (apenas para relatórios de despesas)
-6. Escolha o formato de saída:
-   - Visualizar na tela
-   - Exportar para PDF
-   - Exportar para Excel
+6. Clique em "Visualizar" para gerar o relatório na tela
 
-### Relatórios em Excel
-- Os relatórios em Excel mostram o valor total logo abaixo do título
-- Para relatórios de balanço, são exibidos os totais de:
+### Visualização de Relatórios
+- Os relatórios são exibidos diretamente na tela
+- Para relatórios de balanço, são exibidos:
   - Receitas
   - Despesas
   - Saldo
 - Os valores são formatados no padrão monetário brasileiro (R$)
-- É possível visualizar os filtros aplicados ao final do relatório 
+- É possível visualizar os filtros aplicados ao final do relatório
+
+> **Nota**: A exportação para PDF e Excel estará disponível na próxima versão do sistema (v1.2.0) 
