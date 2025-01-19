@@ -109,10 +109,10 @@
                                     <button type="button" class="btn btn-primary" onclick="generateReport('view')">
                                         <i class="fas fa-eye me-2"></i>Visualizar
                                     </button>
-                                    <button type="button" class="btn btn-danger" onclick="generateReport('pdf')">
+                                    <button type="button" class="btn btn-danger" disabled data-bs-toggle="tooltip" data-bs-placement="top" title="Disponível na versão 1.2.0">
                                         <i class="fas fa-file-pdf me-2"></i>Exportar PDF
                                     </button>
-                                    <button type="button" class="btn btn-success" onclick="generateReport('excel')">
+                                    <button type="button" class="btn btn-success" disabled data-bs-toggle="tooltip" data-bs-placement="top" title="Disponível na versão 1.2.0">
                                         <i class="fas fa-file-excel me-2"></i>Exportar Excel
                                     </button>
                                 </div>
@@ -137,6 +137,12 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Inicializar tooltips do Bootstrap
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
     const categorySelect = document.getElementById('category_id');
     const blockSelect = document.getElementById('block_id');
     const groupSelect = document.getElementById('group_id');
