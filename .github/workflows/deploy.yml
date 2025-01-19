@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main  # ou master, dependendo da sua branch principal
+      - main  # branch principal do projeto
 
 jobs:
   deploy:
@@ -28,7 +28,10 @@ jobs:
         run: |
           ssh vps 'cd /var/www/klgestorpub && \
           git pull origin main && \
-          npm install && \
-          npm run build && \
-          pm2 restart klgestorpub
+          composer install && \
+          php artisan migrate --force && \
+          php artisan config:cache && \
+          php artisan route:cache && \
+          php artisan view:cache && \
+          pm2 restart "php artisan serve --host=0.0.0.0 --port=8000" --name klgestorpub
           ' 
