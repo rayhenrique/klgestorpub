@@ -236,9 +236,44 @@ class ReportController extends Controller
 
     private function generatePDF($data)
     {
-        $pdf = PDF::loadView('reports.pdf', $data);
-        $filename = 'relatorio_' . now()->format('Y-m-d_His') . '.pdf';
-        return $pdf->download($filename);
+        try {
+            \Log::info('Iniciando geração do PDF', ['metadata' => $data['metadata']]);
+            
+            // Configurar o DomPDF
+            $config = [
+                'isRemoteEnabled' => true,
+                'defaultFont' => 'Arial',
+                'isHtml5ParserEnabled' => true,
+                'isFontSubsettingEnabled' => true,
+                'defaultMediaType' => 'print',
+                'defaultPaperSize' => 'a4',
+                'defaultPaperOrientation' => 'portrait'
+            ];
+            
+            // Carregar a view com as configurações
+            \Log::info('Carregando view do PDF com configurações', ['config' => $config]);
+            $pdf = PDF::setOptions($config)->loadView('reports.pdf', $data);
+            \Log::info('View do PDF carregada com sucesso');
+            
+            // Configurar margens (em milímetros)
+            $pdf->setPaper('a4', 'portrait');
+            $pdf->setOption('margin-top', 10);
+            $pdf->setOption('margin-right', 10);
+            $pdf->setOption('margin-bottom', 10);
+            $pdf->setOption('margin-left', 10);
+            \Log::info('Configurações do PDF aplicadas');
+            
+            // Gerar nome do arquivo
+            $filename = 'relatorio_' . now()->format('Y-m-d_His') . '.pdf';
+            \Log::info('Nome do arquivo gerado', ['filename' => $filename]);
+            
+            // Retornar o download
+            return $pdf->download($filename);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao gerar PDF: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            throw $e;
+        }
     }
 
     private function generateExcel($data)
