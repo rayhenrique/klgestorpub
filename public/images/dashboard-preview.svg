@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+    <!-- Background -->
+    <rect width="800" height="600" fill="#f8fafc"/>
+    
+    <!-- Header -->
+    <rect width="800" height="60" fill="#3b82f6"/>
+    <text x="30" y="38" fill="white" font-family="Arial" font-size="20">Dashboard</text>
+    
+    <!-- Sidebar -->
+    <rect x="0" y="60" width="200" height="540" fill="#1e3a8a"/>
+    
+    <!-- Main Content Area -->
+    <g transform="translate(220,80)">
+        <!-- Cards -->
+        <rect width="170" height="100" rx="8" fill="white" stroke="#e2e8f0"/>
+        <text x="20" y="40" font-family="Arial" font-size="14" fill="#64748b">Total Receitas</text>
+        <text x="20" y="70" font-family="Arial" font-size="24" fill="#0f172a">R$ 50.000</text>
+        
+        <rect x="190" width="170" height="100" rx="8" fill="white" stroke="#e2e8f0"/>
+        <text x="210" y="40" font-family="Arial" font-size="14" fill="#64748b">Total Despesas</text>
+        <text x="210" y="70" font-family="Arial" font-size="24" fill="#0f172a">R$ 30.000</text>
+        
+        <rect x="380" width="170" height="100" rx="8" fill="white" stroke="#e2e8f0"/>
+        <text x="400" y="40" font-family="Arial" font-size="14" fill="#64748b">Saldo</text>
+        <text x="400" y="70" font-family="Arial" font-size="24" fill="#0f172a">R$ 20.000</text>
+        
+        <!-- Chart Area -->
+        <rect y="120" width="550" height="300" rx="8" fill="white" stroke="#e2e8f0"/>
+        <text x="20" y="150" font-family="Arial" font-size="16" fill="#0f172a">Evolução Financeira</text>
+        
+        <!-- Sample Chart -->
+        <path d="M40,350 C150,300 250,200 530,170" stroke="#3b82f6" fill="none" stroke-width="3"/>
+        
+        <!-- Table Area -->
+        <rect y="440" width="550" height="100" rx="8" fill="white" stroke="#e2e8f0"/>
+        <line x1="20" y1="480" x2="530" y2="480" stroke="#e2e8f0"/>
+        <text x="20" y="470" font-family="Arial" font-size="14" fill="#64748b">Últimas Transações</text>
+    </g>
+</svg>

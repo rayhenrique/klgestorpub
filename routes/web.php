@@ -15,10 +15,11 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\DocumentationController;
 
 Route::get('/', function () {
-    return redirect()->route('login');
+    return view('welcome');
 });
 
-Auth::routes();
+// Desabilita o registro de novos usuários
+Auth::routes(['register' => false]);
 
 // Rotas que requerem apenas autenticação
 Route::middleware(['auth'])->group(function () {
