@@ -61,4 +61,4 @@ Este software é proprietário e está protegido por direitos autorais. O uso, c
 - Melhorias na performance dos relatórios
 - Otimização da interface de usuário
 
-Todos os direitos reservados 2024 KL Gestor Pub v1.2.0
+Todos os direitos reservados 2025 KL Gestor Pub v1.2.0
