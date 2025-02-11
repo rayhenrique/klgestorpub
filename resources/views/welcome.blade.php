@@ -214,12 +214,6 @@
                             <a href="{{ route('login') }}" class="btn btn-outline-light me-2">
                                 <i class="fas fa-sign-in-alt me-2"></i>Login
                             </a>
-                            <a href="https://wa.me/5582996304742?text=Gostaria%20de%20ver%20uma%20demonstra%C3%A7%C3%A3o%20do%20Sistema%20KL%20Gestor%20Pub" 
-                               class="btn btn-light" 
-                               target="_blank"
-                               rel="noopener">
-                                <i class="fab fa-whatsapp me-2"></i>Demonstração
-                            </a>
                         @endif
                     @endif
                 </div>
