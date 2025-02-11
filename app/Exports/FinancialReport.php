@@ -8,6 +8,9 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use App\Models\CitySetting;
@@ -29,266 +32,179 @@ class FinancialReport implements FromCollection, WithHeadings, WithMapping, With
 
     public function collection()
     {
-        return new Collection($this->data['items']);
+        try {
+            \Log::info('Iniciando collection do Excel', [
+                'items_count' => count($this->data['items']),
+                'filters' => $this->data['filters']
+            ]);
+
+            // Adiciona linhas em branco para o cabeçalho
+            $header = collect([
+                [], // Título
+                [], // Tipo
+                [], // Período
+                [], // Linha em branco
+                []  // Cabeçalho da tabela
+            ]);
+            
+            // Verifica se items é um array aninhado ou um array simples
+            if (isset($this->data['items']['items'])) {
+                $items = collect($this->data['items']['items']);
+            } else {
+                $items = collect($this->data['items']);
+            }
+
+            // Converte os objetos Revenue em arrays
+            $items = $items->map(function ($item) {
+                if (is_object($item) && method_exists($item, 'toArray')) {
+                    return $item->toArray();
+                }
+                return (array) $item;
+            });
+
+            \Log::info('Collection preparada', [
+                'header_count' => $header->count(),
+                'items_count' => $items->count(),
+                'sample_item' => $items->first()
+            ]);
+
+            // Retorna a coleção completa
+            return new Collection(array_merge(
+                $header->toArray(),
+                $items->toArray()
+            ));
+        } catch (\Exception $e) {
+            \Log::error('Erro no método collection: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            throw $e;
+        }
     }
 
     public function headings(): array
     {
-        $headers = ['Período'];
-
-        if ($this->data['filters']['report_type'] === 'balance') {
-            return array_merge($headers, ['Receitas', 'Despesas', 'Saldo']);
-        }
-
-        return array_merge($headers, ['Total']);
+        $title = $this->data['metadata']['title'] ?? 'Relatório Financeiro';
+        $period = $this->data['metadata']['period'] ?? '';
+        
+        return [
+            [$this->data['metadata']['city_name'] ?? 'Teste Nome da Cidade'],
+            [$this->data['metadata']['type'] ?? 'Receitas'],
+            [$period],
+            [],
+            ['Período', 'Total']
+        ];
     }
 
     public function map($row): array
     {
-        $period = match($this->data['filters']['group_by']) {
-            'daily' => Carbon::parse($row['period'])->format('d/m/Y'),
-            'monthly' => Carbon::parse($row['period'])->format('m/Y'),
-            'yearly' => $row['period'],
-        };
+        try {
+            // Se for uma das 5 primeiras linhas (cabeçalho), retorna array vazio
+            if ($this->currentRow <= 5) {
+                $this->currentRow++;
+                return [];
+            }
 
-        if ($this->data['filters']['report_type'] === 'balance') {
+            // Se não houver dados na linha (pode acontecer se $row estiver vazio)
+            if (empty($row)) {
+                return [];
+            }
+
+            \Log::info('Mapeando linha', [
+                'row' => $row,
+                'current_row' => $this->currentRow,
+                'row_type' => gettype($row)
+            ]);
+
+            // Garante que temos acesso aos dados corretos
+            $period = $row['period'] ?? null;
+            $total = $row['total'] ?? 0;
+
+            if (!$period) {
+                \Log::warning('Linha sem período válido', ['row' => $row]);
+                return [];
+            }
+
+            $formattedPeriod = match($this->data['filters']['group_by']) {
+                'daily' => Carbon::parse($period)->format('d/m/Y'),
+                'monthly' => Carbon::parse($period)->format('m/Y'),
+                'yearly' => $period,
+                default => $period
+            };
+
+            if ($this->data['filters']['report_type'] === 'balance') {
+                return [
+                    $formattedPeriod,
+                    floatval($row['revenues'] ?? 0),
+                    floatval($row['expenses'] ?? 0),
+                    floatval($row['balance'] ?? 0)
+                ];
+            }
+
+            $this->currentRow++;
             return [
-                $period,
-                $row['revenues'],
-                $row['expenses'],
-                $row['balance']
+                $formattedPeriod,
+                floatval($total)
             ];
+        } catch (\Exception $e) {
+            \Log::error('Erro no método map: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Dados da linha: ' . json_encode($row));
+            throw $e;
         }
-
-        return [
-            $period,
-            $row['total']
-        ];
-    }
-
-    public function title(): string
-    {
-        return $this->data['metadata']['type'];
     }
 
     public function styles(Worksheet $sheet)
     {
-        $lastColumn = $this->data['filters']['report_type'] === 'balance' ? 'D' : 'B';
-        $lastRow = $sheet->getHighestRow();
-        $currentRow = 1;
-
-        // Adicionar dados da prefeitura
-        if ($this->citySettings) {
-            // Nome da prefeitura
-            $sheet->mergeCells('A1:' . $lastColumn . '1');
-            $sheet->setCellValue('A1', 'Secretaria de Saúde');
+        try {
+            \Log::info('Aplicando estilos ao Excel');
             
-            // Endereço completo
-            $sheet->mergeCells('A2:' . $lastColumn . '2');
-            $sheet->setCellValue('A2', 'Rua Vereador Manoel Firmino - Teotônio Vilela/AL');
+            // Estilos para o título
+            $sheet->mergeCells('A1:B1');
+            $sheet->mergeCells('A2:B2');
+            $sheet->mergeCells('A3:B3');
             
-            // Contato
-            $sheet->mergeCells('A3:' . $lastColumn . '3');
-            $sheet->setCellValue('A3', 'Telefone: (82) 3543-1365 - Email: saude@gov.br');
-            
-            // Prefeito
-            $sheet->mergeCells('A4:' . $lastColumn . '4');
-            $sheet->setCellValue('A4', 'Prefeito: Peu Pereira');
-
-            // Estilo para o cabeçalho da prefeitura
-            $sheet->getStyle('A1:' . $lastColumn . '4')->applyFromArray([
+            // Alinhamento e formatação do cabeçalho
+            $sheet->getStyle('A1:B3')->applyFromArray([
                 'font' => [
-                    'bold' => false,
+                    'bold' => true,
+                    'size' => 12
                 ],
                 'alignment' => [
-                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                ],
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        'color' => ['rgb' => 'CCCCCC'],
-                    ],
-                ],
-            ]);
-
-            // Linha em branco após os dados da prefeitura
-            $currentRow = 6;
-        }
-
-        // Título do relatório
-        $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-        $sheet->setCellValue('A' . $currentRow, $this->data['metadata']['type']);
-        $sheet->getStyle('A' . $currentRow)->getFont()->setBold(false);
-        $currentRow++;
-
-        // Adicionar valor total
-        if ($this->data['filters']['report_type'] === 'revenues') {
-            $totalValue = collect($this->data['items'])->sum('total');
-            $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-            $sheet->setCellValue('A' . $currentRow, 'R$ ' . number_format($totalValue, 2, ',', '.'));
-            $sheet->getStyle('A' . $currentRow)->applyFromArray([
-                'alignment' => [
-                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT,
-                ],
-            ]);
-            $currentRow++;
-        } elseif ($this->data['filters']['report_type'] === 'balance') {
-            $totalRevenues = collect($this->data['items'])->sum('revenues');
-            $totalExpenses = collect($this->data['items'])->sum('expenses');
-            $totalBalance = $totalRevenues - $totalExpenses;
-            
-            $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-            $sheet->setCellValue('A' . $currentRow, 'Total Receitas: R$ ' . number_format($totalRevenues, 2, ',', '.'));
-            $currentRow++;
-            
-            $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-            $sheet->setCellValue('A' . $currentRow, 'Total Despesas: R$ ' . number_format($totalExpenses, 2, ',', '.'));
-            $currentRow++;
-            
-            $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-            $sheet->setCellValue('A' . $currentRow, 'Saldo: R$ ' . number_format($totalBalance, 2, ',', '.'));
-            $currentRow++;
-        }
-
-        // Período do relatório
-        $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-        $sheet->setCellValue('A' . $currentRow, 'De ' . Carbon::parse($this->data['filters']['start_date'])->format('d/m/Y') . ' até ' . Carbon::parse($this->data['filters']['end_date'])->format('d/m/Y'));
-        $currentRow++;
-
-        // Agrupamento
-        $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-        $sheet->setCellValue('A' . $currentRow, 'Agrupamento: Diário');
-        $currentRow++;
-
-        // Data de geração (ajustando o fuso horário)
-        $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-        $sheet->setCellValue('A' . $currentRow, 'Gerado em: ' . $this->data['metadata']['generated_at']->format('d/m/Y H:i:s'));
-        $currentRow++;
-
-        // Estilo para as informações do relatório
-        $sheet->getStyle('A6:' . $lastColumn . $currentRow)->applyFromArray([
-            'borders' => [
-                'allBorders' => [
-                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    'color' => ['rgb' => 'CCCCCC'],
-                ],
-            ],
-        ]);
-
-        // Adicionar filtros aplicados
-        if (!empty($this->data['filters']['category_id']) || 
-            !empty($this->data['filters']['block_id']) || 
-            !empty($this->data['filters']['group_id']) || 
-            !empty($this->data['filters']['action_id']) || 
-            !empty($this->data['filters']['expense_classification_id'])) {
-            
-            $currentRow++;
-            $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-            $sheet->setCellValue('A' . $currentRow, 'Filtros Aplicados:');
-            $currentRow++;
-
-            if (!empty($this->data['filters']['category_id'])) {
-                $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-                $sheet->setCellValue('A' . $currentRow, 'Fonte: ' . Category::find($this->data['filters']['category_id'])->name);
-                $currentRow++;
-            }
-
-            if (!empty($this->data['filters']['block_id'])) {
-                $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-                $sheet->setCellValue('A' . $currentRow, 'Bloco: ' . Category::find($this->data['filters']['block_id'])->name);
-                $currentRow++;
-            }
-
-            if (!empty($this->data['filters']['group_id'])) {
-                $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-                $sheet->setCellValue('A' . $currentRow, 'Grupo: ' . Category::find($this->data['filters']['group_id'])->name);
-                $currentRow++;
-            }
-
-            if (!empty($this->data['filters']['action_id'])) {
-                $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-                $sheet->setCellValue('A' . $currentRow, 'Ação: ' . Category::find($this->data['filters']['action_id'])->name);
-                $currentRow++;
-            }
-
-            if (!empty($this->data['filters']['expense_classification_id'])) {
-                $sheet->mergeCells('A' . $currentRow . ':' . $lastColumn . $currentRow);
-                $sheet->setCellValue('A' . $currentRow, 'Classificação de Despesa: ' . ExpenseClassification::find($this->data['filters']['expense_classification_id'])->name);
-                $currentRow++;
-            }
-
-            // Estilo para os filtros
-            $sheet->getStyle('A' . ($currentRow - 1) . ':' . $lastColumn . $currentRow)->applyFromArray([
-                'borders' => [
-                    'allBorders' => [
-                        'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        'color' => ['rgb' => 'CCCCCC'],
-                    ],
-                ],
-            ]);
-        }
-
-        // Linha em branco antes dos dados
-        $currentRow++;
-
-        // Início dos dados
-        $dataStartRow = $currentRow;
-
-        // Estilo para o cabeçalho dos dados
-        $sheet->getStyle('A' . $dataStartRow . ':' . $lastColumn . $dataStartRow)->applyFromArray([
-            'font' => [
-                'bold' => false,
-            ],
-            'fill' => [
-                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                'startColor' => ['rgb' => 'F8F9FA']
-            ],
-            'borders' => [
-                'allBorders' => [
-                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    'color' => ['rgb' => 'CCCCCC'],
-                ],
-            ],
-        ]);
-
-        // Estilo para todas as células de dados
-        $sheet->getStyle('A' . $dataStartRow . ':' . $lastColumn . $lastRow)->applyFromArray([
-            'borders' => [
-                'allBorders' => [
-                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                    'color' => ['rgb' => 'CCCCCC'],
-                ],
-            ],
-        ]);
-
-        // Ajustar largura das colunas
-        foreach(range('A', $lastColumn) as $column) {
-            $sheet->getColumnDimension($column)->setAutoSize(true);
-        }
-
-        // Alinhar à direita e formatar valores monetários
-        if ($this->data['filters']['report_type'] === 'balance') {
-            $sheet->getStyle('B' . $dataStartRow . ':D' . $lastRow)->applyFromArray([
-                'alignment' => [
-                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
-                ],
-                'numberFormat' => [
-                    'formatCode' => '_-[$R$-pt-BR] * #,##0.00_-;-[$R$-pt-BR] * #,##0.00_-;_-[$R$-pt-BR] * "-"??_-;_-@_-'
+                    'horizontal' => Alignment::HORIZONTAL_CENTER,
+                    'vertical' => Alignment::VERTICAL_CENTER
                 ]
             ]);
-        } else {
-            $sheet->getStyle('B' . $dataStartRow . ':B' . $lastRow)->applyFromArray([
-                'alignment' => [
-                    'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT,
+            
+            // Estilo para o cabeçalho da tabela
+            $sheet->getStyle('A5:B5')->applyFromArray([
+                'font' => ['bold' => true],
+                'borders' => [
+                    'outline' => [
+                        'borderStyle' => Border::BORDER_THIN
+                    ]
                 ],
-                'numberFormat' => [
-                    'formatCode' => '_-[$R$-pt-BR] * #,##0.00_-;-[$R$-pt-BR] * #,##0.00_-;_-[$R$-pt-BR] * "-"??_-;_-@_-'
+                'fill' => [
+                    'fillType' => Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => 'E9ECEF']
                 ]
             ]);
+            
+            // Formatação da coluna de valores
+            $lastRow = $sheet->getHighestRow();
+            $sheet->getStyle('B6:B'.$lastRow)->getNumberFormat()->setFormatCode('#,##0.00');
+            
+            // Ajusta largura das colunas
+            $sheet->getColumnDimension('A')->setWidth(15);
+            $sheet->getColumnDimension('B')->setWidth(20);
+            
+            \Log::info('Estilos aplicados com sucesso', ['last_row' => $lastRow]);
+        } catch (\Exception $e) {
+            \Log::error('Erro ao aplicar estilos: ' . $e->getMessage());
+            throw $e;
         }
-
-        return [
-            $dataStartRow => ['font' => ['bold' => false]],
-        ];
     }
-} 
+
+    public function title(): string
+    {
+        return 'Relatório';
+    }
+}

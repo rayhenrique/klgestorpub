@@ -39,7 +39,7 @@ Este software é proprietário e está protegido por direitos autorais. O uso, c
 
 ## Changelog
 
-### Versão 1.0.0 (15/03/2024)
+### Versão 1.0.0 (08/01/2024)
 - Lançamento inicial do sistema
 - Implementação do controle de despesas e receitas
 - Sistema de categorias hierárquicas
@@ -47,11 +47,18 @@ Este software é proprietário e está protegido por direitos autorais. O uso, c
 - Sistema de autenticação e autorização
 - Configurações por município
 
-### Versão 1.1.0 (Atual)
+### Versão 1.1.0
 - Adição de logs de auditoria
 - Melhorias na interface do usuário
 - Implementação de relatórios avançados
 - Sistema de backup automático
 - Documentação completa do sistema
 
-Todos os direitos reservados © 2024 KL Gestor Pub v1.1.0
+### Versão 1.2.0 (Atual)
+- Simplificação do sistema de relatórios
+- Remoção dos relatórios por categoria e personalizados
+- Foco em relatórios essenciais: Receitas, Despesas, Balanço e Classificação de Despesas
+- Melhorias na performance dos relatórios
+- Otimização da interface de usuário
+
+Todos os direitos reservados 2024 KL Gestor Pub v1.2.0

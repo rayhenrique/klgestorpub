@@ -20,7 +20,8 @@
                                     <select class="form-select" id="report_type" name="report_type" required>
                                         <option value="revenues">Receitas</option>
                                         <option value="expenses">Despesas</option>
-                                        <option value="balance">Balanço</option>
+                                        <option value="balance">Balanço (Receitas x Despesas)</option>
+                                        <option value="expense_classification">Classificação de Despesas</option>
                                     </select>
                                 </div>
                             </div>
@@ -340,20 +341,21 @@ function generateReport(format) {
             credentials: 'same-origin'
         })
         .then(async response => {
-            console.log('Status da resposta:', response.status);
-            console.log('Headers da resposta:', Object.fromEntries(response.headers.entries()));
-            
-            const responseText = await response.text();
-            console.log('Conteúdo da resposta:', responseText);
-            
-            if (!response.ok) {
-                throw new Error(responseText || `Erro HTTP: ${response.status}`);
+            const contentType = response.headers.get('content-type');
+            if (contentType && contentType.includes('application/json')) {
+                const jsonResponse = await response.json();
+                if (jsonResponse.message && jsonResponse.status === 'info') {
+                    throw new Error(jsonResponse.message);
+                }
             }
             
-            return responseText;
+            if (!response.ok) {
+                throw new Error(`Erro HTTP: ${response.status}`);
+            }
+            
+            return response.text();
         })
         .then(html => {
-            console.log('Tamanho do HTML:', html.length);
             if (!html.trim()) {
                 throw new Error('O relatório retornou vazio');
             }
@@ -363,14 +365,18 @@ function generateReport(format) {
             reportContainer.scrollIntoView({ behavior: 'smooth' });
         })
         .catch(error => {
-            console.error('Erro detalhado:', error);
-            console.error('Stack trace:', error.stack);
             reportContainer.style.display = 'none';
-            showError('Erro ao gerar o relatório. Por favor, tente novamente. Detalhes: ' + error.message);
+            if (error.message.includes('próxima versão')) {
+                showInfo(error.message);
+            } else {
+                showError('Erro ao gerar o relatório: ' + error.message);
+            }
         });
+    } else if (format === 'excel') {
+        showInfo('A exportação para Excel estará disponível na próxima versão.');
     } else {
         try {
-            // Para PDF e Excel, submeter o formulário normalmente
+            // Para PDF, submeter o formulário normalmente
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'format';
@@ -387,8 +393,7 @@ function generateReport(format) {
             form.target = originalTarget;
             form.removeChild(input);
         } catch (error) {
-            console.error('Erro ao exportar:', error);
-            showError('Erro ao exportar o relatório. Por favor, tente novamente.');
+            showError('Erro ao exportar o relatório: ' + error.message);
         }
     }
 }
@@ -397,11 +402,15 @@ function showError(message) {
     Swal.fire({
         title: 'Erro',
         text: message,
-        icon: 'error',
-        confirmButtonText: 'OK',
-        customClass: {
-            confirmButton: 'btn btn-primary'
-        }
+        icon: 'error'
+    });
+}
+
+function showInfo(message) {
+    Swal.fire({
+        title: 'Informação',
+        text: message,
+        icon: 'info'
     });
 }
 </script>

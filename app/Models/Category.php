@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Expense;
+use App\Models\Revenue;
 
 class Category extends Model
 {
@@ -70,6 +72,17 @@ class Category extends Model
     public function canHaveChildren(): bool
     {
         return $this->type !== self::TYPE_ACAO;
+    }
+
+    // Relações com despesas e receitas
+    public function expenses(): HasMany
+    {
+        return $this->hasMany(Expense::class, 'acao_id');
+    }
+
+    public function revenues(): HasMany
+    {
+        return $this->hasMany(Revenue::class, 'acao_id');
     }
 
     // Método para obter o tipo de filho permitido

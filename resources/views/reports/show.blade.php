@@ -2,10 +2,18 @@
     <div class="report-header mb-4">
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h3>{{ $metadata['type'] }}</h3>
+                <h3>{{ $metadata['title'] }}</h3>
                 <p class="text-muted mb-0">
                     <strong>Período:</strong> {{ $metadata['period'] }}<br>
-                    <strong>Agrupamento:</strong> {{ $metadata['group_by'] }}
+                    @if($metadata['group_by'])
+                        <strong>Agrupamento:</strong> {{ $metadata['group_by'] }}
+                    @endif
+                    @if($metadata['category'])
+                        <br><strong>{{ $metadata['category_type'] }}:</strong> {{ $metadata['category'] }}
+                    @endif
+                    @if($metadata['classification'])
+                        <br><strong>Classificação:</strong> {{ $metadata['classification'] }}
+                    @endif
                 </p>
             </div>
             <div>
@@ -47,79 +55,190 @@
             <table class="table table-striped">
                 <thead>
                     <tr>
-                        <th>Período</th>
-                        @if($filters['report_type'] === 'balance')
+                        @if($filters['report_type'] === 'custom')
+                            <th>Data</th>
+                            <th>Tipo</th>
+                            <th>Categoria</th>
+                            <th>Classificação</th>
+                            <th>Descrição</th>
+                            <th class="text-end">Valor</th>
+                        @elseif($filters['report_type'] === 'category')
+                            <th>Categoria</th>
                             <th class="text-end">Receitas</th>
                             <th class="text-end">Despesas</th>
                             <th class="text-end">Saldo</th>
-                        @else
+                        @elseif($filters['report_type'] === 'expense_classification')
+                            <th>Classificação</th>
                             <th class="text-end">Total</th>
+                            <th class="text-end">%</th>
+                        @else
+                            <th>Período</th>
+                            @if($filters['report_type'] === 'balance')
+                                <th class="text-end">Receitas</th>
+                                <th class="text-end">Despesas</th>
+                                <th class="text-end">Saldo</th>
+                            @else
+                                <th class="text-end">Total</th>
+                            @endif
                         @endif
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($items as $item)
                         <tr>
-                            <td>
-                                @if($filters['group_by'] === 'daily')
-                                    {{ \Carbon\Carbon::createFromFormat('Y-m-d', $item->period ?? $item['period'])->format('d/m/Y') }}
-                                @elseif($filters['group_by'] === 'monthly')
-                                    {{ \Carbon\Carbon::createFromFormat('Y-m', $item->period ?? $item['period'])->format('M/Y') }}
-                                @else
-                                    {{ $item->period ?? $item['period'] }}
-                                @endif
-                            </td>
-                            @if($filters['report_type'] === 'balance')
+                            @if($filters['report_type'] === 'custom')
+                                <td>{{ \Carbon\Carbon::parse($item['date'])->format('d/m/Y') }}</td>
+                                <td>{{ $item['type'] }}</td>
+                                <td>{{ $item['category'] }}</td>
+                                <td>{{ $item['classification'] }}</td>
+                                <td>{{ $item['description'] }}</td>
+                                <td class="text-end">R$ {{ number_format($item['amount'], 2, ',', '.') }}</td>
+                            @elseif($filters['report_type'] === 'category')
+                                <td>{{ $item['category'] }}</td>
                                 <td class="text-end">R$ {{ number_format($item['revenues'], 2, ',', '.') }}</td>
                                 <td class="text-end">R$ {{ number_format($item['expenses'], 2, ',', '.') }}</td>
                                 <td class="text-end {{ $item['balance'] >= 0 ? 'text-success' : 'text-danger' }}">
                                     R$ {{ number_format($item['balance'], 2, ',', '.') }}
                                 </td>
+                            @elseif($filters['report_type'] === 'expense_classification')
+                                <td>{{ $item['classification'] }}</td>
+                                <td class="text-end">R$ {{ number_format($item['total'], 2, ',', '.') }}</td>
+                                <td class="text-end">{{ number_format(($item['total'] / $items->sum('total')) * 100, 1) }}%</td>
                             @else
-                                <td class="text-end">R$ {{ number_format($item->total ?? $item['total'], 2, ',', '.') }}</td>
+                                <td>
+                                    @if($filters['group_by'] === 'daily')
+                                        {{ \Carbon\Carbon::createFromFormat('Y-m-d', $item->period ?? $item['period'])->format('d/m/Y') }}
+                                    @elseif($filters['group_by'] === 'monthly')
+                                        {{ \Carbon\Carbon::createFromFormat('Y-m', $item->period ?? $item['period'])->format('M/Y') }}
+                                    @else
+                                        {{ $item->period ?? $item['period'] }}
+                                    @endif
+                                </td>
+                                @if($filters['report_type'] === 'balance')
+                                    <td class="text-end">R$ {{ number_format($item['revenues'], 2, ',', '.') }}</td>
+                                    <td class="text-end">R$ {{ number_format($item['expenses'], 2, ',', '.') }}</td>
+                                    <td class="text-end {{ $item['balance'] >= 0 ? 'text-success' : 'text-danger' }}">
+                                        R$ {{ number_format($item['balance'], 2, ',', '.') }}
+                                    </td>
+                                @else
+                                    <td class="text-end">R$ {{ number_format($item->total ?? $item['total'], 2, ',', '.') }}</td>
+                                @endif
                             @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ $filters['report_type'] === 'balance' ? 4 : 2 }}" class="text-center">
+                            <td colspan="{{ $filters['report_type'] === 'custom' ? 6 : ($filters['report_type'] === 'balance' || $filters['report_type'] === 'category' ? 4 : ($filters['report_type'] === 'expense_classification' ? 3 : 2)) }}" class="text-center">
                                 Nenhum registro encontrado
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
                 @if($items->count() > 0)
-                <tfoot>
-                    <tr class="table-active fw-bold">
-                        <td>Total</td>
-                        @if($filters['report_type'] === 'balance')
-                            <td class="text-end">R$ {{ number_format($items->sum('revenues'), 2, ',', '.') }}</td>
-                            <td class="text-end">R$ {{ number_format($items->sum('expenses'), 2, ',', '.') }}</td>
-                            <td class="text-end {{ $items->sum('balance') >= 0 ? 'text-success' : 'text-danger' }}">
-                                R$ {{ number_format($items->sum('balance'), 2, ',', '.') }}
-                            </td>
-                        @else
-                            <td class="text-end">R$ {{ number_format($items->sum('total'), 2, ',', '.') }}</td>
-                        @endif
-                    </tr>
-                </tfoot>
+                    <tfoot>
+                        <tr class="table-dark fw-bold">
+                            @if($filters['report_type'] === 'custom')
+                                <td colspan="5" class="text-end">Total Geral:</td>
+                                <td class="text-end">R$ {{ number_format($items->sum('amount'), 2, ',', '.') }}</td>
+                            @elseif($filters['report_type'] === 'category')
+                                <td class="text-end">Totais:</td>
+                                <td class="text-end">R$ {{ number_format($items->sum('revenues'), 2, ',', '.') }}</td>
+                                <td class="text-end">R$ {{ number_format($items->sum('expenses'), 2, ',', '.') }}</td>
+                                <td class="text-end {{ $items->sum('balance') >= 0 ? 'text-success' : 'text-danger' }}">
+                                    R$ {{ number_format($items->sum('balance'), 2, ',', '.') }}
+                                </td>
+                            @elseif($filters['report_type'] === 'expense_classification')
+                                <td class="text-end">Total:</td>
+                                <td class="text-end">R$ {{ number_format($items->sum('total'), 2, ',', '.') }}</td>
+                                <td class="text-end">100%</td>
+                            @elseif($filters['report_type'] === 'balance')
+                                <td class="text-end">Totais:</td>
+                                <td class="text-end">R$ {{ number_format($items->sum('revenues'), 2, ',', '.') }}</td>
+                                <td class="text-end">R$ {{ number_format($items->sum('expenses'), 2, ',', '.') }}</td>
+                                <td class="text-end {{ $items->sum('balance') >= 0 ? 'text-success' : 'text-danger' }}">
+                                    R$ {{ number_format($items->sum('balance'), 2, ',', '.') }}
+                                </td>
+                            @else
+                                <td class="text-end">Total:</td>
+                                <td class="text-end">R$ {{ number_format($items->sum('total'), 2, ',', '.') }}</td>
+                            @endif
+                        </tr>
+                    </tfoot>
                 @endif
             </table>
         </div>
     </div>
+
+    @if(isset($charts))
+        <div class="report-charts mt-4">
+            <div class="card">
+                <div class="card-body">
+                    <canvas id="reportChart"></canvas>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 <style>
 @media print {
-    .sidebar, .navbar, .btn-toolbar, .btn-outline-secondary {
+    .sidebar, .navbar, .btn-toolbar, .btn-outline-secondary, .btn-outline-primary {
         display: none !important;
     }
-    main {
-        margin: 0 !important;
+    .container-fluid {
         padding: 0 !important;
     }
-    .card {
-        border: none !important;
-        box-shadow: none !important;
+    .report-content {
+        padding: 20px !important;
+    }
+    .table {
+        font-size: 12px !important;
+    }
+    .table th, .table td {
+        padding: 4px 8px !important;
+    }
+    @page {
+        margin: 1cm;
     }
 }
-</style> 
+</style>
+
+@if(isset($charts))
+    @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ctx = document.getElementById('reportChart').getContext('2d');
+            const chart = new Chart(ctx, {
+                type: '{{ $filters['report_type'] === "balance" ? "bar" : "line" }}',
+                data: @json($charts),
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: '{{ $metadata['title'] }}'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return 'R$ ' + value.toLocaleString('pt-BR', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2
+                                    });
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        });
+    </script>
+    @endpush
+@endif

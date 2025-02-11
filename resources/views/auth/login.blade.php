@@ -90,7 +90,7 @@
             <div class="text-center mt-4">
                 <small class="text-muted">
                     <i class="fas fa-balance-scale me-2"></i>Sistema em conformidade com a Lei de Responsabilidade Fiscal
-                    <br><i class="far fa-copyright"></i> {{ date('Y') }} {{ config('app.name') }} - v1.1.0
+                    <br><i class="far fa-copyright"></i> {{ date('Y') }} {{ config('app.name') }} - v1.2.0
                     <br>Desenvolvido por <a href="https://kltecnologia.com" target="_blank" class="text-muted text-decoration-none">KL Tecnologia</a>
                 </small>
             </div>

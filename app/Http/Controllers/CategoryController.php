@@ -73,7 +73,7 @@ class CategoryController extends Controller
 
         return redirect()
             ->route('categories.index')
-            ->with('success', "{$typeLabel} '{$category->name}' foi criada com sucesso!");
+            ->with('success', sprintf('A %s "%s" foi criada com sucesso!', $typeLabel, $category->name));
     }
 
     public function edit(Category $category)
@@ -136,7 +136,7 @@ class CategoryController extends Controller
 
         return redirect()
             ->route('categories.index')
-            ->with('success', "{$typeLabel} '{$category->name}' foi atualizada com sucesso!");
+            ->with('success', sprintf('A %s "%s" foi atualizada com sucesso!', $typeLabel, $category->name));
     }
 
     public function destroy(Category $category)
@@ -150,11 +150,66 @@ class CategoryController extends Controller
             default => 'Categoria'
         };
 
-        $category->delete();
+        // Verificar dependências
+        $hasDependencies = false;
+        $dependencies = [];
 
-        return redirect()
-            ->route('categories.index')
-            ->with('success', "{$typeLabel} '{$name}' foi excluída com sucesso!");
+        // Verificar despesas
+        if ($category->expenses()->exists()) {
+            $hasDependencies = true;
+            $dependencies[] = 'despesas';
+        }
+
+        // Verificar receitas
+        if ($category->revenues()->exists()) {
+            $hasDependencies = true;
+            $dependencies[] = 'receitas';
+        }
+
+        // Verificar categorias filhas
+        if ($category->children()->exists()) {
+            $hasDependencies = true;
+            $dependencies[] = 'subcategorias';
+        }
+
+        if ($hasDependencies) {
+            // Inativar a categoria ao invés de excluir
+            $category->update(['active' => false]);
+            
+            $dependenciesStr = implode(', ', $dependencies);
+            return redirect()
+                ->route('categories.index')
+                ->with('warning', sprintf('A %s "%s" não pode ser excluída pois possui %s associadas. A categoria foi inativada para preservar o histórico.',
+                    $typeLabel,
+                    $name,
+                    $dependenciesStr
+                ));
+        }
+
+        try {
+            $category->delete();
+            return redirect()
+                ->route('categories.index')
+                ->with('success', sprintf('A %s "%s" foi excluída com sucesso!', $typeLabel, $name));
+        } catch (\Exception $e) {
+            // Tentar inativar em caso de erro na exclusão
+            try {
+                $category->update(['active' => false]);
+                return redirect()
+                    ->route('categories.index')
+                    ->with('warning', sprintf('Não foi possível excluir a %s "%s" devido a dependências. A categoria foi inativada para preservar o histórico.',
+                        $typeLabel,
+                        $name
+                    ));
+            } catch (\Exception $e2) {
+                return redirect()
+                    ->route('categories.index')
+                    ->with('error', sprintf('Erro ao processar a %s "%s". Por favor, tente novamente.',
+                        $typeLabel,
+                        $name
+                    ));
+            }
+        }
     }
 
     // Métodos para AJAX

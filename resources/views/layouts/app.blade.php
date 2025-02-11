@@ -32,6 +32,8 @@
 </head>
 <body class="d-flex flex-column h-100">
     <div id="app" class="flex-shrink-0">
+        @include('components.flash-messages')
+        
         @if (!Route::is('login') && !Route::is('register') && !Route::is('password.*'))
             <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-sm">
                 <div class="container-fluid">

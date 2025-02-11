@@ -117,41 +117,37 @@
 @endsection
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script>
-    // Máscara para CEP
-    const zipCode = document.getElementById('zip_code');
-    zipCode.addEventListener('input', function (e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 8) value = value.slice(0, 8);
-        if (value.length === 8) {
-            value = value.slice(0, 5) + '-' + value.slice(5);
-        }
-        e.target.value = value;
-    });
+    $(document).ready(function() {
+        // Máscara para CEP
+        $('#zip_code').mask('00000-000');
+        
+        // Máscara para telefone
+        var SPMaskBehavior = function (val) {
+            return val.replace(/\D/g, '').length === 11 ? '(00) 00000-0000' : '(00) 0000-00009';
+        },
+        spOptions = {
+            onKeyPress: function(val, e, field, options) {
+                field.mask(SPMaskBehavior.apply({}, arguments), options);
+            }
+        };
+        $('#phone').mask(SPMaskBehavior, spOptions);
+        
+        // Máscara para código IBGE
+        $('#ibge_code').mask('0000000');
+        
+        // Estado em maiúsculas limitado a 2 caracteres
+        $('#state').on('input', function() {
+            this.value = this.value.replace(/[^A-Za-z]/g, '').toUpperCase().substring(0, 2);
+        });
 
-    // Validação do CEP no envio do formulário
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const zipValue = zipCode.value.replace(/\D/g, '');
-        if (zipValue.length > 0 && zipValue.length !== 8) {
-            e.preventDefault();
-            alert('O CEP deve ter exatamente 8 dígitos');
-        }
-    });
-
-    // Máscara para telefone
-    const phone = document.getElementById('phone');
-    phone.addEventListener('input', function (e) {
-        let value = e.target.value.replace(/\D/g, '');
-        if (value.length > 11) value = value.slice(0, 11);
-        if (value.length > 2) value = '(' + value.slice(0, 2) + ') ' + value.slice(2);
-        if (value.length > 9) value = value.slice(0, 9) + '-' + value.slice(9);
-        e.target.value = value;
-    });
-
-    // Converter UF para maiúsculo
-    const state = document.getElementById('state');
-    state.addEventListener('input', function (e) {
-        e.target.value = e.target.value.toUpperCase();
+        // Remover máscara do CEP antes de enviar
+        $('form').submit(function() {
+            var cep = $('#zip_code').val();
+            $('#zip_code').val(cep.replace(/\D/g, ''));
+            return true;
+        });
     });
 </script>
-@endpush 
+@endpush

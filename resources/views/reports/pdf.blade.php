@@ -8,15 +8,18 @@
             font-family: Arial, sans-serif;
             font-size: 12px;
             line-height: 1.4;
+            margin: 0;
+            padding: 20px;
         }
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
         }
         .header h1 {
             font-size: 18px;
             margin: 0;
-            padding: 0;
+            padding: 10px 0;
+            border-bottom: 2px solid #333;
         }
         .header p {
             color: #666;
@@ -25,22 +28,31 @@
         .city-info {
             text-align: center;
             margin-bottom: 20px;
-            border-bottom: 1px solid #ddd;
-            padding-bottom: 10px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
         }
         .city-info h2 {
             font-size: 16px;
             margin: 0 0 5px 0;
             padding: 0;
+            color: #333;
+        }
+        .city-info h3 {
+            font-size: 14px;
+            margin: 0 0 10px 0;
+            padding: 0;
+            color: #444;
         }
         .city-info p {
-            margin: 2px 0;
+            margin: 3px 0;
             font-size: 11px;
+            color: #666;
         }
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin: 20px 0;
         }
         th, td {
             border: 1px solid #ddd;
@@ -50,6 +62,10 @@
         th {
             background-color: #f8f9fa;
             font-weight: bold;
+            color: #333;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
         .text-end {
             text-align: right;
@@ -68,14 +84,12 @@
             font-weight: bold;
         }
         .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
+            margin-top: 30px;
+            padding-top: 10px;
+            border-top: 1px solid #ddd;
             text-align: center;
             font-size: 10px;
             color: #666;
-            padding: 10px 0;
-            border-top: 1px solid #ddd;
         }
         .page-break {
             page-break-after: always;
@@ -107,37 +121,45 @@
         $citySettings = App\Models\CitySetting::first();
     @endphp
 
-    @if($citySettings)
-    <div class="city-info">
-        <h2>{{ $citySettings->city_hall_name }}</h2>
-        <p>{{ $citySettings->address }} - {{ $citySettings->city_name }}/{{ $citySettings->state }}</p>
-        @if($citySettings->zip_code)
-            <p>CEP: {{ $citySettings->zip_code }}</p>
-        @endif
-        @if($citySettings->phone || $citySettings->email)
+    <div class="header">
+        <div class="city-info">
+            <h2>{{ $citySettings->city_hall_name ?? 'Prefeitura Municipal' }}</h2>
+            <h3>{{ $citySettings->city_name ?? '' }}</h3>
             <p>
-                @if($citySettings->phone)
-                    Telefone: {{ $citySettings->phone }}
+                {{ $citySettings->address ?? '' }}
+                @if($citySettings->zip_code)
+                    - CEP: {{ substr($citySettings->zip_code, 0, 5) . '-' . substr($citySettings->zip_code, 5) }}
                 @endif
-                @if($citySettings->phone && $citySettings->email)
-                    -
-                @endif
-                @if($citySettings->email)
-                    Email: {{ $citySettings->email }}
+                @if($citySettings->state)
+                    - {{ $citySettings->state }}
                 @endif
             </p>
-        @endif
-        @if($citySettings->mayor_name)
-            <p>Prefeito: {{ $citySettings->mayor_name }}</p>
-        @endif
-    </div>
-    @endif
+            @if($citySettings->phone || $citySettings->email)
+                <p>
+                    @if($citySettings->phone)
+                        Telefone: {{ $citySettings->phone }}
+                    @endif
+                    @if($citySettings->phone && $citySettings->email)
+                        -
+                    @endif
+                    @if($citySettings->email)
+                        E-mail: {{ $citySettings->email }}
+                    @endif
+                </p>
+            @endif
+            @if($citySettings->mayor_name)
+                <p>Prefeito: {{ $citySettings->mayor_name }}</p>
+            @endif
+        </div>
 
-    <div class="header">
-        <h1>{{ $metadata['type'] }}</h1>
-        <p>{{ $metadata['period'] }}</p>
-        <p>Agrupamento: {{ $metadata['group_by'] }}</p>
-        <p>Gerado em: {{ $metadata['generated_at']->format('d/m/Y H:i:s') }}</p>
+        <h1>{{ $metadata['title'] }}</h1>
+        <p>Período: {{ $metadata['period'] }}</p>
+        @if(isset($metadata['category']))
+            <p>{{ $metadata['category_type'] }}: {{ $metadata['category'] }}</p>
+        @endif
+        @if(isset($metadata['classification']))
+            <p>Classificação: {{ $metadata['classification'] }}</p>
+        @endif
     </div>
 
     @if(!empty($filters['category_id']) || !empty($filters['block_id']) || !empty($filters['group_id']) || !empty($filters['action_id']) || !empty($filters['expense_classification_id']))
@@ -232,4 +254,4 @@
         {{ $citySettings ? $citySettings->city_hall_name : 'Sistema de Gestão Financeira' }} - Relatório gerado em {{ $metadata['generated_at']->format('d/m/Y H:i:s') }}
     </div>
 </body>
-</html> 
+</html>
