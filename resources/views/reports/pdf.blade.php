@@ -190,10 +190,18 @@
             <tr>
                 <th>Período</th>
                 @if($filters['report_type'] === 'balance')
+                    <th>Fonte</th>
+                    <th>Bloco</th>
+                    <th>Grupo</th>
+                    <th>Ação</th>
                     <th class="text-end">Receitas</th>
                     <th class="text-end">Despesas</th>
                     <th class="text-end">Saldo</th>
                 @else
+                    <th>Fonte</th>
+                    <th>Bloco</th>
+                    <th>Grupo</th>
+                    <th>Ação</th>
                     <th class="text-end">Total</th>
                 @endif
             </tr>
@@ -203,20 +211,28 @@
                 <tr>
                     <td>
                         @if($filters['group_by'] === 'daily')
-                            {{ \Carbon\Carbon::createFromFormat('Y-m-d', $item['period'])->format('d/m/Y') }}
+                            {{ \Carbon\Carbon::parse($item['period'])->format('d/m/Y') }}
                         @elseif($filters['group_by'] === 'monthly')
-                            {{ \Carbon\Carbon::createFromFormat('Y-m', $item['period'])->format('m/Y') }}
+                            {{ \Carbon\Carbon::parse($item['period'])->format('m/Y') }}
                         @else
-                            {{ $item['period'] }}
+                            {{ \Carbon\Carbon::parse($item['period'])->format('d/m/Y') }}
                         @endif
                     </td>
                     @if($filters['report_type'] === 'balance')
+                        <td>{{ $item['fonte'] ?? '-' }}</td>
+                        <td>{{ $item['bloco'] ?? '-' }}</td>
+                        <td>{{ $item['grupo'] ?? '-' }}</td>
+                        <td>{{ $item['acao'] ?? '-' }}</td>
                         <td class="text-end text-success">R$ {{ number_format($item['revenues'], 2, ',', '.') }}</td>
                         <td class="text-end text-danger">R$ {{ number_format($item['expenses'], 2, ',', '.') }}</td>
                         <td class="text-end {{ $item['balance'] >= 0 ? 'text-success' : 'text-danger' }}">
                             R$ {{ number_format(abs($item['balance']), 2, ',', '.') }}
                         </td>
                     @else
+                        <td>{{ $item['fonte'] ?? '-' }}</td>
+                        <td>{{ $item['bloco'] ?? '-' }}</td>
+                        <td>{{ $item['grupo'] ?? '-' }}</td>
+                        <td>{{ $item['acao'] ?? '-' }}</td>
                         <td class="text-end {{ $filters['report_type'] === 'revenues' ? 'text-success' : 'text-danger' }}">
                             R$ {{ number_format($item['total'], 2, ',', '.') }}
                         </td>
@@ -224,7 +240,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ $filters['report_type'] === 'balance' ? 4 : 2 }}" style="text-align: center">
+                    <td colspan="{{ $filters['report_type'] === 'balance' ? 8 : 6 }}" style="text-align: center">
                         Nenhum registro encontrado
                     </td>
                 </tr>
@@ -235,12 +251,20 @@
             <tr>
                 <td><strong>Total</strong></td>
                 @if($filters['report_type'] === 'balance')
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
                     <td class="text-end text-success"><strong>R$ {{ number_format($items->sum('revenues'), 2, ',', '.') }}</strong></td>
                     <td class="text-end text-danger"><strong>R$ {{ number_format($items->sum('expenses'), 2, ',', '.') }}</strong></td>
                     <td class="text-end {{ $items->sum('balance') >= 0 ? 'text-success' : 'text-danger' }}">
                         <strong>R$ {{ number_format(abs($items->sum('balance')), 2, ',', '.') }}</strong>
                     </td>
                 @else
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
                     <td class="text-end {{ $filters['report_type'] === 'revenues' ? 'text-success' : 'text-danger' }}">
                         <strong>R$ {{ number_format($items->sum('total'), 2, ',', '.') }}</strong>
                     </td>

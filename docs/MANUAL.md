@@ -31,6 +31,18 @@
 - Os valores são formatados no padrão monetário brasileiro (R$)
 - É possível visualizar os filtros aplicados ao final do relatório
 
+### Relatórios em PDF
+- Os relatórios em PDF agora incluem informações detalhadas:
+  - Fonte
+  - Bloco
+  - Grupo
+  - Ação
+  - Valores formatados no padrão monetário brasileiro
+  - Datas no formato brasileiro (dd/mm/yyyy)
+- O layout foi otimizado para melhor legibilidade
+- Totalizadores são exibidos ao final do relatório
+- Filtros aplicados são mostrados no cabeçalho
+
 ## Histórico de Versões
 
 ### Versão 1.0.0 (08/01/2024)
@@ -54,3 +66,13 @@
 - Foco em relatórios essenciais: Receitas, Despesas, Balanço e Classificação de Despesas
 - Melhorias na performance dos relatórios
 - Otimização da interface de usuário
+
+### Versão 1.2.0 (11/02/2025)
+- Melhorias nos relatórios em PDF
+  - Adição das colunas: Fonte, Bloco, Grupo e Ação
+  - Formatação de datas no padrão brasileiro
+  - Layout otimizado para melhor visualização
+- Padronização da formatação de datas:
+  - Diário: dd/mm/yyyy (exemplo: 11/02/2025)
+  - Mensal: mm/yyyy (exemplo: 02/2025)
+  - Anual: yyyy (exemplo: 2025)

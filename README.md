@@ -12,6 +12,39 @@ O KL Gestor Pub é uma solução completa para gestão de contas públicas, ofer
 - Gestão de usuários e permissões
 - Configurações personalizadas por município
 
+## Funcionalidades
+
+### Relatórios
+- Relatórios detalhados de:
+  - Receitas
+  - Despesas
+  - Balanço
+  - Classificação de Despesas
+- Exportação para PDF e Excel
+- Visualização por período (Diário, Mensal, Anual)
+- Filtros por Fonte, Bloco, Grupo e Ação
+- Formatação de datas no padrão brasileiro
+- Valores monetários formatados em Real (R$)
+
+### Categorização
+- Sistema hierárquico de categorias:
+  - Fontes
+  - Blocos
+  - Grupos
+  - Ações
+- Classificação detalhada de despesas
+
+### Segurança
+- Autenticação de usuários
+- Controle de permissões
+- Logs de auditoria
+- Backup automático
+
+### Personalização
+- Configurações por município
+- Interface responsiva
+- Temas personalizáveis
+
 ## Requisitos
 
 - PHP >= 8.1
