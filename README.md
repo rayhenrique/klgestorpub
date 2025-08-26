@@ -276,4 +276,4 @@ Este software é proprietário e está protegido por direitos autorais. O uso, c
 - **Tecnologia**: Laravel 11.31, PHP 8.2+, Bootstrap 5, Vite
 - **Status**: Todos os testes passando ✅
 
-Todos os direitos reservados 2025 KL Gestor Pub v1.2.0
+Todos os direitos reservados 2025 KL Gestor Pub v1.3.0

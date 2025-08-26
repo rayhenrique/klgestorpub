@@ -88,6 +88,15 @@
                         <li>Melhorias na performance dos relatórios</li>
                         <li>Otimização da interface de usuário</li>
                     </ul>
+
+                    <h3>Versão 1.3.0 (26/08/2025)</h3>
+                    <ul>
+                        <li>Melhorias na organização do código</li>
+                        <li>Refatoração do ReportController para utilizar serviços</li>
+                        <li>Otimizações de performance</li>
+                        <li>Melhorias na interface do usuário</li>
+                        <li>Atualização da documentação</li>
+                    </ul>
                 </div>
             </div>
         </main>

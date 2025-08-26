@@ -3,7 +3,7 @@
         <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center">
             <div class="text-center text-sm-start mb-1 mb-sm-0">
                 <small class="text-muted">
-                    <i class="far fa-copyright"></i> {{ date('Y') }} {{ config('app.name') }} v1.2.0
+                    <i class="far fa-copyright"></i> {{ date('Y') }} {{ config('app.name') }} v1.3.0
                 </small>
             </div>
             <div class="text-center text-sm-end">
