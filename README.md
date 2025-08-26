@@ -14,7 +14,25 @@ O KL Gestor Pub é uma solução completa para gestão de contas públicas, ofer
 
 ## Funcionalidades
 
-### Relatórios
+## Melhorias Recentes (v1.3.0)
+
+### 🔧 **Validação Aprimorada**
+- **Form Request Classes**: `StoreRevenueRequest`, `UpdateRevenueRequest`, `StoreExpenseRequest`, `UpdateExpenseRequest`
+- **Validação Robusta**: Regras de validação em português com mensagens personalizadas
+- **Segurança**: Validação de valores monetários, datas e relacionamentos de categorias
+
+### 🧪 **Sistema de Testes**
+- **Cobertura Completa**: Testes para gerenciamento de receitas, despesas e relatórios
+- **Factories**: `RevenueFactory`, `ExpenseFactory`, `CategoryFactory` para dados de teste
+- **Testes Funcionais**: Validação de CRUD, autorização e relacionamentos
+- **PHPUnit**: Framework de testes integrado com Laravel
+
+### 🏗️ **Arquitetura Melhorada**
+- **Service Layer**: `ReportService` para centralizar lógica de relatórios
+- **Separação de Responsabilidades**: Controllers mais limpos e focados
+- **Manutenibilidade**: Código mais organizado e reutilizável
+
+### 📊 **Relatórios Otimizados**
 - Relatórios detalhados de:
   - Receitas
   - Despesas
@@ -249,11 +267,13 @@ Este software é proprietário e está protegido por direitos autorais. O uso, c
 - Sistema de backup automático
 - Documentação completa do sistema
 
-### Versão 1.2.0 (Atual)
-- Simplificação do sistema de relatórios
-- Remoção dos relatórios por categoria e personalizados
-- Foco em relatórios essenciais: Receitas, Despesas, Balanço e Classificação de Despesas
-- Melhorias na performance dos relatórios
-- Otimização da interface de usuário
+### Versão 1.3.0 (Atual - 26/08/2025)
+- **Melhorias Principais**: Validação aprimorada, testes abrangentes, arquitetura melhorada
+- **Validação de Formulários**: Implementação de Request classes dedicadas para validação
+- **Testes**: Suite completa de testes com PHPUnit e factories para modelos
+- **Arquitetura**: Separação da lógica de negócios com Service classes
+- **Qualidade do Código**: Melhor organização, manutenibilidade e práticas de produção
+- **Tecnologia**: Laravel 11.31, PHP 8.2+, Bootstrap 5, Vite
+- **Status**: Todos os testes passando ✅
 
 Todos os direitos reservados 2025 KL Gestor Pub v1.2.0
