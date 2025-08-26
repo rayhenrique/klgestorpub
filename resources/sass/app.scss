@@ -1,0 +1,407 @@
+// Fonts
+@import url('https://fonts.bunny.net/css?family=Nunito');
+
+// Variables
+@import 'variables';
+
+// Bootstrap
+@import 'bootstrap/scss/bootstrap';
+
+// Variáveis de cores para Gestão Pública
+$primary-color: #004a7c; // Azul institucional
+$secondary-color: #005691;
+$accent-color: #ffd700; // Dourado para detalhes
+$bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8eb 100%);
+
+// Customizações Corporativas
+body {
+    background: $bg-gradient;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.login-container {
+    margin: auto;
+    padding: 2rem 1rem;
+    width: 100%;
+}
+
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.95);
+    
+    .card-header {
+        background: $primary-color;
+        color: white;
+        border: none;
+        padding: 1.5rem;
+        font-size: 1.25rem;
+        font-weight: 500;
+        text-align: center;
+        border-bottom: 3px solid $accent-color;
+        
+        i {
+            margin-right: 0.5rem;
+        }
+    }
+
+    .card-body {
+        padding: 2.5rem;
+        
+        @media (max-width: 576px) {
+            padding: 1.5rem;
+        }
+    }
+}
+
+.form-control {
+    border-radius: 8px;
+    padding: 12px 15px;
+    border: 1px solid #e1e1e1;
+    font-size: 1rem;
+    
+    &:focus {
+        box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.15);
+        border-color: #2c3e50;
+    }
+}
+
+.btn-primary {
+    background: $primary-color;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 35px;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 15px rgba(44, 62, 80, 0.2);
+    transition: all 0.3s ease;
+    
+    &:hover {
+        background: $secondary-color;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(44, 62, 80, 0.3);
+    }
+}
+
+.form-label {
+    font-weight: 500;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    
+    i {
+        margin-right: 0.5rem;
+    }
+}
+
+.form-check-label {
+    color: #666;
+}
+
+.btn-link {
+    color: #2c3e50;
+    text-decoration: none;
+    
+    &:hover {
+        color: #34495e;
+        text-decoration: underline;
+    }
+}
+
+.company-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+    
+    .logo-circle {
+        width: 80px;
+        height: 80px;
+        margin: 0 auto 1rem;
+        background: $primary-color;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 15px rgba(44, 62, 80, 0.2);
+        border: 2px solid $accent-color;
+        
+        i {
+            font-size: 2.5rem;
+            color: $accent-color;
+        }
+    }
+    
+    h4 {
+        color: $primary-color;
+        font-weight: 400;
+        margin: 0;
+        font-size: 1.5rem;
+        
+        @media (max-width: 576px) {
+            font-size: 1.25rem;
+        }
+        
+        span {
+            color: $secondary-color;
+            font-weight: 300;
+        }
+    }
+}
+
+.input-group {
+    .input-group-text {
+        background: #f8f9fa;
+        border-right: none;
+        color: #2c3e50;
+    }
+    
+    .form-control {
+        border-left: none;
+        
+        &:focus + .input-group-text {
+            border-color: #2c3e50;
+        }
+    }
+    
+    .btn-outline-secondary {
+        border-color: #e1e1e1;
+        color: #2c3e50;
+        
+        &:hover {
+            background: #f8f9fa;
+            color: #2c3e50;
+        }
+    }
+}
+
+// Animações
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    animation: fadeIn 0.5s ease-out;
+}
+
+// Melhorias de Acessibilidade
+.form-control:focus,
+.btn:focus,
+.form-check-input:focus {
+    outline: none;
+    box-shadow: 0 0 0 0.2rem rgba(44, 62, 80, 0.25);
+}
+
+// Responsividade
+@media (max-width: 576px) {
+    .login-container {
+        padding: 1rem;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+    
+    .btn-lg {
+        padding: 0.75rem 1.5rem;
+    }
+}
+
+// Estilo do rodapé
+.text-muted {
+    a {
+        &:hover {
+            text-decoration: underline !important;
+            color: $primary-color !important;
+        }
+    }
+}
+
+.mt-4 {
+    small {
+        line-height: 1.8;
+    }
+}
+
+// Dashboard Styles
+.chart-container {
+    position: relative;
+    margin: auto;
+}
+
+.card {
+    transition: transform 0.2s;
+    
+    &:hover {
+        transform: translateY(-5px);
+    }
+}
+
+.avatar-circle {
+    transition: all 0.3s ease;
+    
+    &:hover {
+        transform: scale(1.1);
+    }
+}
+
+// Responsive adjustments
+@media (max-width: 767.98px) {
+    .sidebar {
+        margin-bottom: 1rem;
+    }
+    
+    .btn-toolbar {
+        margin-top: 1rem;
+    }
+}
+
+// Footer Styles
+.footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 0.875rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 1000;
+    
+    a {
+        &:hover {
+            color: $primary-color !important;
+        }
+    }
+}
+
+// Ajuste para o conteúdo principal
+main {
+    padding-bottom: 3rem !important; // Espaço para o rodapé
+}
+
+// Navbar Styles
+.navbar {
+    background: $primary-color !important;
+    padding: 0.75rem 1rem;
+    
+    .navbar-brand {
+        font-weight: 500;
+        
+        .brand-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            
+            i {
+                color: $accent-color;
+            }
+        }
+    }
+    
+    .nav-link {
+        padding: 0.5rem 1rem;
+        position: relative;
+        
+        i {
+            font-size: 1.1rem;
+        }
+        
+        .badge {
+            font-size: 0.65rem;
+            padding: 0.25em 0.5em;
+            margin-left: -0.5em;
+            margin-top: -0.5em;
+        }
+    }
+    
+    .avatar-circle {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        
+        i {
+            font-size: 1rem;
+            color: $primary-color;
+        }
+    }
+    
+    .dropdown-menu {
+        border: none;
+        border-radius: 8px;
+        margin-top: 0.5rem;
+        
+        .dropdown-item {
+            padding: 0.5rem 1rem;
+            
+            i {
+                width: 20px;
+            }
+            
+            &:hover {
+                background-color: #f8f9fa;
+            }
+            
+            &.text-danger:hover {
+                background-color: #dc354522;
+            }
+        }
+    }
+}
+
+// Ajuste para o sidebar com nova navbar
+.sidebar {
+    position: fixed;
+    top: 61px; // Altura da navbar
+    bottom: 0;
+    left: 0;
+    z-index: 100;
+    padding: 0;
+    box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+
+    .sidebar-heading {
+        font-size: .75rem;
+        text-transform: uppercase;
+    }
+
+    .nav-link {
+        font-weight: 500;
+        color: #333;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        margin: 0.2rem 1rem;
+
+        &:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        &.active {
+            color: $primary-color;
+            background-color: rgba(0, 74, 124, 0.1);
+        }
+
+        i {
+            width: 20px;
+            text-align: center;
+        }
+    }
+}
+
+@media (max-width: 767.98px) {
+    .sidebar {
+        position: static;
+        height: auto;
+        padding-top: 1rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
+    }
+}
