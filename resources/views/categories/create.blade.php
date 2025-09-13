@@ -21,7 +21,7 @@
                         @csrf
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="name" class="form-label">Nome</label>
                                 <input type="text" class="form-control @error('name') is-invalid @enderror" id="name" name="name" value="{{ old('name') }}" required>
                                 @error('name')
@@ -29,7 +29,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="code" class="form-label">Código</label>
                                 <input type="text" class="form-control @error('code') is-invalid @enderror" id="code" name="code" value="{{ old('code') }}">
                                 @error('code')
@@ -39,7 +39,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="type" class="form-label">Tipo</label>
                                 <select class="form-select @error('type') is-invalid @enderror" id="type" name="type" required>
                                     <option value="">Selecione...</option>
@@ -52,7 +52,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="parent_id" class="form-label">Categoria Pai</label>
                                 <select class="form-select @error('parent_id') is-invalid @enderror" id="parent_id" name="parent_id">
                                     <option value="">Selecione...</option>
@@ -82,6 +82,9 @@
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ route('categories.index') }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>Salvar
                             </button>
@@ -139,4 +142,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 
-@endsection 
+@endsection

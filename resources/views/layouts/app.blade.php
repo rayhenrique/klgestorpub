@@ -37,12 +37,19 @@
         @if (!Route::is('login') && !Route::is('register') && !Route::is('password.*'))
             <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-sm">
                 <div class="container-fluid">
+                    <!-- Mobile Sidebar Toggle -->
+                    <button class="btn btn-outline-light d-md-none me-2" type="button" id="sidebarToggle" aria-label="Toggle sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
                     <a class="navbar-brand d-flex align-items-center" href="{{ url('/') }}">
                         <div class="brand-icon me-2">
                             <i class="fas fa-landmark"></i>
                         </div>
-                        {{ config('app.name') }}
+                        <span class="d-none d-sm-inline">{{ config('app.name') }}</span>
+                        <span class="d-sm-none">KL Gestor</span>
                     </a>
+                    
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="{{ __('Toggle navigation') }}">
                         <span class="navbar-toggler-icon"></span>
                     </button>
@@ -192,6 +199,48 @@
                 }
             });
         }
+
+        // Sidebar Toggle Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebarMenu');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            const body = document.body;
+
+            if (sidebarToggle && sidebar && sidebarOverlay) {
+                // Toggle sidebar
+                function toggleSidebar() {
+                    sidebar.classList.toggle('show');
+                    sidebarOverlay.classList.toggle('show');
+                    body.classList.toggle('sidebar-open');
+                }
+
+                // Close sidebar
+                function closeSidebar() {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                    body.classList.remove('sidebar-open');
+                }
+
+                // Event listeners
+                sidebarToggle.addEventListener('click', toggleSidebar);
+                sidebarOverlay.addEventListener('click', closeSidebar);
+
+                // Close sidebar on window resize if screen becomes larger
+                window.addEventListener('resize', function() {
+                    if (window.innerWidth >= 768) {
+                        closeSidebar();
+                    }
+                });
+
+                // Close sidebar on escape key
+                document.addEventListener('keydown', function(e) {
+                    if (e.key === 'Escape' && sidebar.classList.contains('show')) {
+                        closeSidebar();
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

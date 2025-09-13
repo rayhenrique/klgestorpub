@@ -1,20 +1,75 @@
-# KL Gestor Pub
+# KL Gestor Pub v1.4.0
 
-Sistema de Gestão de Contas Públicas desenvolvido para auxiliar na administração e controle financeiro de órgãos públicos.
+Sistema de Gestão de Contas Públicas desenvolvido para auxiliar na administração e controle financeiro de órgãos públicos municipais.
 
-## Sobre o Sistema
+## 🎯 Sobre o Sistema
 
-O KL Gestor Pub é uma solução completa para gestão de contas públicas, oferecendo:
-- Controle de despesas e receitas
-- Classificação de despesas
-- Relatórios financeiros
-- Auditoria de operações
-- Gestão de usuários e permissões
-- Configurações personalizadas por município
+O **KL Gestor Pub** é uma solução completa e moderna para gestão de contas públicas, oferecendo:
+
+### 💰 **Gestão Financeira**
+- ✅ Controle detalhado de receitas e despesas
+- ✅ Sistema hierárquico de categorização (Fonte → Bloco → Grupo → Ação)
+- ✅ Classificação específica de despesas
+- ✅ Balanço automático e análise de variações
+
+### 📊 **Relatórios e Analytics**
+- ✅ Relatórios financeiros avançados com filtros
+- ✅ Exportação para PDF e Excel
+- ✅ Dashboard com métricas em tempo real
+- ✅ Gráficos interativos e comparativos
+
+### 🔐 **Segurança e Auditoria**
+- ✅ Sistema completo de auditoria de operações
+- ✅ Controle de usuários com roles (Admin/Operador)
+- ✅ Logs detalhados de todas as ações
+- ✅ Validação robusta de dados
+
+### ⚙️ **Configuração e Personalização**
+- ✅ Configurações personalizadas por município
+- ✅ Interface responsiva em português brasileiro
+- ✅ Timezone configurável (padrão: America/Maceio)
+- ✅ Temas e layouts adaptáveis
 
 ## Funcionalidades
 
-## Melhorias Recentes (v1.3.0)
+## 🚀 Melhorias Recentes (v1.4.0)
+
+### 📱 **Sistema 100% Responsivo**
+- **Design Mobile-First**: Interface totalmente adaptada para smartphones e tablets
+- **Sidebar Responsivo**: Menu lateral colapsável com animações suaves
+- **Breakpoints Inteligentes**: Otimizado para mobile (<768px), tablet (768px-1024px) e desktop (>1024px)
+- **Tabelas Adaptáveis**: Scroll horizontal e colunas ocultas em telas menores
+- **Formulários Otimizados**: Layout responsivo em todos os CRUDs
+- **Navegação Mobile**: Botão hamburger e overlay para melhor UX
+
+### 💾 **Sistema de Backup e Restauração Completo**
+- **Backup Automático**: Criação de backups compactados (.gz) via interface web
+- **Download Seguro**: Sistema de download com autenticação e validação
+- **Restauração Inteligente**: Upload e restauração de backups com pré-validação
+- **Backup Pré-Restauração**: Criação automática de backup antes de restaurar
+- **Comandos Artisan**: `backup:database` e `backup:restore` para automação
+- **Logs de Auditoria**: Registro completo de todas as operações de backup
+- **Validação de Arquivos**: Suporte a .sql e .gz com verificação de integridade
+
+### ♿ **Acessibilidade WAI-ARIA**
+- **Conformidade WCAG**: Implementação de diretrizes de acessibilidade
+- **Navegação por Teclado**: Suporte completo para navegação sem mouse
+- **Screen Readers**: Compatibilidade com leitores de tela
+- **Atributos ARIA**: Implementação correta de aria-labels e roles
+- **Contraste Otimizado**: Cores e contrastes adequados para baixa visão
+
+### 🏗️ **Arquitetura Completamente Reestruturada**
+- **Migração Limpa**: Removida arquitetura obsoleta da tabela `transactions`
+- **Tabelas Especializadas**: Separação clara entre `revenues` e `expenses`
+- **Performance Otimizada**: Consultas mais eficientes e relacionamentos otimizados
+- **Estabilidade Total**: Zero conflitos de foreign key constraints
+
+### 🔧 **Correções Críticas e Melhorias**
+- **Migrações Estáveis**: Sistema de migrações completamente funcional
+- **Código Limpo**: Remoção de 262 linhas de código obsoleto
+- **Validação Aprimorada**: Tratamento robusto de erros e exceções
+- **Interface Polida**: Melhorias visuais e de usabilidade
+- **GitHub Atualizado**: Repositório sincronizado com as últimas correções
 
 ### 🔧 **Validação Aprimorada**
 - **Form Request Classes**: `StoreRevenueRequest`, `UpdateRevenueRequest`, `StoreExpenseRequest`, `UpdateExpenseRequest`
@@ -63,22 +118,71 @@ O KL Gestor Pub é uma solução completa para gestão de contas públicas, ofer
 - Interface responsiva
 - Temas personalizáveis
 
-## Requisitos
+## 📋 Requisitos do Sistema
 
-- PHP >= 8.1
-- Composer
-- MySQL/MariaDB
-- Node.js e NPM
+### **Requisitos Mínimos:**
+- **PHP**: >= 8.2 (recomendado 8.3+)
+- **Composer**: >= 2.0
+- **MySQL/MariaDB**: >= 8.0 / >= 10.4
+- **Node.js**: >= 18.x
+- **NPM**: >= 9.x
 
-## Instalação Local
+### **Extensões PHP Necessárias:**
+- `php-mysql`, `php-mbstring`, `php-xml`, `php-curl`
+- `php-zip`, `php-gd`, `php-bcmath`, `php-intl`
 
-1. Clone o repositório
-2. Execute `composer install`
-3. Execute `npm install`
-4. Configure o arquivo `.env`
-5. Execute `php artisan migrate`
-6. Execute `php artisan db:seed`
-7. Execute `npm run build`
+### **Recursos do Servidor:**
+- **RAM**: Mínimo 512MB (recomendado 1GB+)
+- **Disco**: Mínimo 1GB livre
+- **Processador**: Qualquer arquitetura x64
+
+## 🛠️ Instalação Local
+
+### **Passo a Passo Completo:**
+
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/rayhenrique/klgestorpub.git
+cd klgestorpub
+
+# 2. Instalar dependências PHP
+composer install
+
+# 3. Instalar dependências Node.js
+npm install
+
+# 4. Configurar ambiente
+cp .env.example .env
+php artisan key:generate
+
+# 5. Configurar banco de dados no .env
+# DB_CONNECTION=mysql
+# DB_HOST=127.0.0.1
+# DB_PORT=3306
+# DB_DATABASE=klgestorpub
+# DB_USERNAME=root
+# DB_PASSWORD=sua_senha
+
+# 6. Executar migrações e seeders
+php artisan migrate:fresh --seed
+
+# 7. Criar link simbólico para storage
+php artisan storage:link
+
+# 8. Compilar assets
+npm run build
+
+# 9. Iniciar servidor de desenvolvimento
+php artisan serve
+```
+
+### **⚙️ Configurações Importantes no .env:**
+```env
+APP_NAME="KL Gestor Pub"
+APP_LOCALE=pt_BR
+APP_FALLBACK_LOCALE=pt_BR
+APP_TIMEZONE=America/Maceio
+```
 
 ## Instalação no Ubuntu Server (VPS)
 
@@ -267,13 +371,58 @@ Este software é proprietário e está protegido por direitos autorais. O uso, c
 - Sistema de backup automático
 - Documentação completa do sistema
 
-### Versão 1.3.0 (Atual - 26/08/2025)
+### Versão 1.4.0 (Atual - Janeiro 2025)
+- **🏗️ Arquitetura Reestruturada**: Migração completa para tabelas especializadas (revenues/expenses)
+- **🔧 Correções Críticas**: Eliminação de conflitos de migração e foreign key constraints
+- **🧹 Código Limpo**: Remoção de 262 linhas de código obsoleto e 5 arquivos desnecessários
+- **⚡ Performance**: Otimização de consultas e relacionamentos de banco de dados
+- **🔒 Estabilidade**: Sistema totalmente funcional sem erros de migração
+- **📚 Documentação**: Atualização completa da documentação técnica e manual
+- **🚀 Deploy**: Preparado para atualizações futuras sem conflitos
+- **✅ Status**: Sistema 100% operacional e testado
+
+### Versão 1.3.0 (Agosto 2025)
 - **Melhorias Principais**: Validação aprimorada, testes abrangentes, arquitetura melhorada
 - **Validação de Formulários**: Implementação de Request classes dedicadas para validação
 - **Testes**: Suite completa de testes com PHPUnit e factories para modelos
 - **Arquitetura**: Separação da lógica de negócios com Service classes
 - **Qualidade do Código**: Melhor organização, manutenibilidade e práticas de produção
 - **Tecnologia**: Laravel 11.31, PHP 8.2+, Bootstrap 5, Vite
-- **Status**: Todos os testes passando ✅
 
-Todos os direitos reservados 2025 KL Gestor Pub v1.3.0
+## 🆘 Troubleshooting
+
+### **Problemas Comuns e Soluções:**
+
+#### **Erro de Migração:**
+```bash
+# Se houver erro de foreign key constraint:
+php artisan migrate:fresh --seed
+```
+
+#### **Erro de Permissões:**
+```bash
+# Linux/Mac:
+sudo chown -R www-data:www-data storage bootstrap/cache
+sudo chmod -R 775 storage bootstrap/cache
+
+# Windows (executar como administrador):
+icacls storage /grant Users:F /T
+icacls bootstrap\cache /grant Users:F /T
+```
+
+#### **Assets não carregando:**
+```bash
+npm run build
+php artisan config:clear
+php artisan cache:clear
+```
+
+#### **Banco de dados não conecta:**
+1. Verifique as credenciais no `.env`
+2. Certifique-se que o MySQL está rodando
+3. Teste a conexão: `php artisan tinker` → `DB::connection()->getPdo()`
+
+---
+
+**Todos os direitos reservados © 2025 KL Gestor Pub v1.4.0**  
+**Desenvolvido por Ray Henrique** | **Email**: rayhenrique@gmail.com

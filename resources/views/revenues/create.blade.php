@@ -21,7 +21,7 @@
                         @csrf
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="description" class="form-label">Descrição <span class="text-danger">*</span></label>
                                 <input type="text" 
                                        class="form-control @error('description') is-invalid @enderror" 
@@ -34,7 +34,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-3 mb-3">
+                            <div class="col-12 col-sm-6 col-md-3 mb-3">
                                 <label for="amount" class="form-label">Valor <span class="text-danger">*</span></label>
                                 <input type="number" 
                                        class="form-control @error('amount') is-invalid @enderror" 
@@ -49,7 +49,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-3 mb-3">
+                            <div class="col-12 col-sm-6 col-md-3 mb-3">
                                 <label for="date" class="form-label">Data <span class="text-danger">*</span></label>
                                 <input type="date" 
                                        class="form-control @error('date') is-invalid @enderror" 
@@ -64,7 +64,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-3 mb-3">
+                            <div class="col-12 col-sm-6 col-lg-3 mb-3">
                                 <label for="fonte_id" class="form-label">Fonte <span class="text-danger">*</span></label>
                                 <select class="form-select @error('fonte_id') is-invalid @enderror" 
                                         id="fonte_id" 
@@ -82,7 +82,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-3 mb-3">
+                            <div class="col-12 col-sm-6 col-lg-3 mb-3">
                                 <label for="bloco_id" class="form-label">Bloco <span class="text-danger">*</span></label>
                                 <select class="form-select @error('bloco_id') is-invalid @enderror" 
                                         id="bloco_id" 
@@ -96,7 +96,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-3 mb-3">
+                            <div class="col-12 col-sm-6 col-lg-3 mb-3">
                                 <label for="grupo_id" class="form-label">Grupo <span class="text-danger">*</span></label>
                                 <select class="form-select @error('grupo_id') is-invalid @enderror" 
                                         id="grupo_id" 
@@ -110,7 +110,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-3 mb-3">
+                            <div class="col-12 col-sm-6 col-lg-3 mb-3">
                                 <label for="acao_id" class="form-label">Ação <span class="text-danger">*</span></label>
                                 <select class="form-select @error('acao_id') is-invalid @enderror" 
                                         id="acao_id" 
@@ -136,7 +136,10 @@
                             @enderror
                         </div>
 
-                        <div class="d-flex justify-content-end">
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ route('revenues.index') }}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
                             <button type="submit" class="btn btn-primary">
                                 <i class="fas fa-save me-2"></i>Salvar
                             </button>
@@ -238,4 +241,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
-@endsection 
+@endsection

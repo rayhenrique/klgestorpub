@@ -1,5 +1,9 @@
-<div class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
-    <div class="position-sticky pt-3">
+<!-- Sidebar Overlay for Mobile -->
+<div class="sidebar-overlay d-md-none" id="sidebarOverlay"></div>
+
+<!-- Sidebar -->
+<div class="col-md-3 col-lg-2 sidebar bg-light" id="sidebarMenu">
+    <div class="sidebar-content position-sticky pt-3">
         <ul class="nav flex-column">
             <li class="nav-item">
                 <a class="nav-link {{ Route::is('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
@@ -113,9 +117,15 @@
                                 Logs de Auditoria
                             </a>
                         </li>
+                        <li class="nav-item">
+                            <a class="nav-link {{ Route::is('settings.backup.*') ? 'active' : '' }}" href="{{ route('settings.backup.index') }}">
+                                <i class="fas fa-database me-2"></i>
+                                Backup do Banco
+                            </a>
+                        </li>
                     </ul>
                 @endif
             @endauth
         </ul>
     </div>
-</div> 
+</div>

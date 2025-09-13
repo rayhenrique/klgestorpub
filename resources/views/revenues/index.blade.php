@@ -26,45 +26,59 @@
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Data</th>
-                                    <th>Descrição</th>
-                                    <th>Valor</th>
-                                    <th>Fonte</th>
-                                    <th>Bloco</th>
-                                    <th>Grupo</th>
-                                    <th>Ação</th>
-                                    <th class="text-end">Ações</th>
+                                    <th class="text-nowrap">Data</th>
+                                    <th class="text-nowrap">Descrição</th>
+                                    <th class="text-nowrap">Valor</th>
+                                    <th class="text-nowrap d-none d-md-table-cell">Fonte</th>
+                                    <th class="text-nowrap d-none d-lg-table-cell">Bloco</th>
+                                    <th class="text-nowrap d-none d-lg-table-cell">Grupo</th>
+                                    <th class="text-nowrap d-none d-xl-table-cell">Ação</th>
+                                    <th class="text-end text-nowrap">Ações</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($revenues as $revenue)
                                     <tr>
-                                        <td>{{ $revenue->date->format('d/m/Y') }}</td>
-                                        <td>{{ $revenue->description }}</td>
-                                        <td>R$ {{ number_format($revenue->amount, 2, ',', '.') }}</td>
-                                        <td>{{ $revenue->fonte->name }}</td>
-                                        <td>{{ $revenue->bloco->name }}</td>
-                                        <td>{{ $revenue->grupo->name }}</td>
-                                        <td>{{ $revenue->acao->name }}</td>
-                                        <td class="text-end">
-                                            <a href="{{ route('revenues.edit', $revenue) }}" 
-                                               class="btn btn-sm btn-outline-primary me-2"
-                                               onclick="confirmEdit(event, 'Deseja editar esta receita?')">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('revenues.destroy', $revenue) }}" 
-                                                  method="POST" 
-                                                  class="d-inline">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" 
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta receita?')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
+                                        <td class="text-nowrap">{{ $revenue->date->format('d/m/Y') }}</td>
+                                        <td>
+                                            <div class="fw-medium">{{ $revenue->description }}</div>
+                                            <div class="d-md-none">
+                                                <small class="text-muted">
+                                                    {{ $revenue->fonte->name }}
+                                                    @if(isset($revenue->bloco))
+                                                        • {{ $revenue->bloco->name }}
+                                                    @endif
+                                                </small>
+                                            </div>
+                                        </td>
+                                        <td class="text-nowrap fw-bold text-success">R$ {{ number_format($revenue->amount, 2, ',', '.') }}</td>
+                                        <td class="d-none d-md-table-cell">{{ $revenue->fonte->name }}</td>
+                                        <td class="d-none d-lg-table-cell">{{ $revenue->bloco->name }}</td>
+                                        <td class="d-none d-lg-table-cell">{{ $revenue->grupo->name }}</td>
+                                        <td class="d-none d-xl-table-cell">{{ $revenue->acao->name }}</td>
+                                        <td class="text-end text-nowrap">
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ route('revenues.edit', $revenue) }}" 
+                                                   class="btn btn-sm btn-outline-primary"
+                                                   onclick="confirmEdit(event, 'Deseja editar esta receita?')"
+                                                   title="Editar">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form action="{{ route('revenues.destroy', $revenue) }}" 
+                                                      method="POST" 
+                                                      class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" 
+                                                            class="btn btn-sm btn-outline-danger"
+                                                            onclick="confirmDelete(event, 'Tem certeza que deseja excluir esta receita?')"
+                                                            title="Excluir">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -80,4 +94,4 @@
         </main>
     </div>
 </div>
-@endsection 
+@endsection

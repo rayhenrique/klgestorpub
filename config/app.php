@@ -17,6 +17,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    |
+    | This value is the version of your application. This will be used when the
+    | framework needs to display the application version in notifications or
+    | other UI elements where an application version needs to be displayed.
+    |
+    */
+
+    'version' => '1.4.0',
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Environment
     |--------------------------------------------------------------------------
     |

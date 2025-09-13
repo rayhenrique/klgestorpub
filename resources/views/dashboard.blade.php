@@ -57,7 +57,7 @@
 
             <!-- Cards de Resumo Financeiro -->
             <div class="row g-4 mb-4">
-                <div class="col-md-4">
+                <div class="col-12 col-sm-6 col-md-4">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -88,7 +88,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-sm-6 col-md-4">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -119,7 +119,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
+                <div class="col-12 col-sm-12 col-md-4">
                     <div class="card h-100 border-0 shadow-sm">
                         <div class="card-body">
                             <div class="d-flex align-items-center">
@@ -145,19 +145,23 @@
 
             <!-- Gráficos -->
             <div class="row g-4 mb-4">
-                <div class="col-md-6">
+                <div class="col-12 col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title">Receitas vs Despesas</h5>
-                            <canvas id="revenueExpenseChart" height="300"></canvas>
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas id="revenueExpenseChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-6">
+                <div class="col-12 col-lg-6">
                     <div class="card border-0 shadow-sm">
                         <div class="card-body">
                             <h5 class="card-title">Distribuição por Categoria</h5>
-                            <canvas id="categoryChart" height="300"></canvas>
+                            <div class="chart-container" style="position: relative; height: 300px;">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -172,27 +176,37 @@
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover">
-                            <thead>
+                            <thead class="table-light">
                                 <tr>
-                                    <th>Data</th>
-                                    <th>Descrição</th>
-                                    <th>Tipo</th>
-                                    <th class="text-end">Valor</th>
+                                    <th class="text-nowrap">Data</th>
+                                    <th class="text-nowrap">Descrição</th>
+                                    <th class="text-nowrap d-none d-sm-table-cell">Tipo</th>
+                                    <th class="text-end text-nowrap">Valor</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse($latestTransactions as $transaction)
                                     <tr>
-                                        <td>{{ \Carbon\Carbon::parse($transaction->date)->format('d/m/Y') }}</td>
-                                        <td>{{ $transaction->description }}</td>
-                                        <td><span class="badge bg-{{ $transaction->badge_color }}">{{ $transaction->type }}</span></td>
-                                        <td class="text-end text-{{ $transaction->badge_color }}">
+                                        <td class="text-nowrap">{{ \Carbon\Carbon::parse($transaction->date)->format('d/m/Y') }}</td>
+                                        <td>
+                                            <div class="fw-medium">{{ $transaction->description }}</div>
+                                            <div class="d-sm-none">
+                                                <span class="badge bg-{{ $transaction->badge_color }} badge-sm">{{ $transaction->type }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="d-none d-sm-table-cell">
+                                            <span class="badge bg-{{ $transaction->badge_color }}">{{ $transaction->type }}</span>
+                                        </td>
+                                        <td class="text-end text-nowrap text-{{ $transaction->badge_color }} fw-bold">
                                             R$ {{ number_format($transaction->amount, 2, ',', '.') }}
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center">Nenhuma transação encontrada</td>
+                                        <td colspan="4" class="text-center py-4 text-muted">
+                                            <i class="fas fa-inbox fa-2x mb-2 d-block"></i>
+                                            Nenhuma transação encontrada
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -292,4 +306,4 @@ const categoryChart = new Chart(
     }
 );
 </script>
-@endpush 
+@endpush
