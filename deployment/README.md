@@ -208,4 +208,4 @@ For deployment issues or questions:
 
 ---
 
-**KL Gestor Pub v1.3.0** - Production Deployment Guide
+**KL Gestor Pub v1.4.0** - Production Deployment Guide

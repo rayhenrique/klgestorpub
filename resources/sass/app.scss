@@ -200,6 +200,8 @@ body {
 .sidebar {
     transition: transform 0.3s ease-in-out;
     z-index: 1040;
+    background-color: #ffffff;
+    border-right: 1px solid rgba(0, 0, 0, 0.1);
     
     @media (max-width: 767.98px) {
         position: fixed;
@@ -208,16 +210,27 @@ body {
         height: 100vh;
         width: 280px;
         transform: translateX(-100%);
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 0 30px rgba(0, 0, 0, 0.2);
+        overflow-y: auto;
         
         &.show {
             transform: translateX(0);
+        }
+        
+        // Adicionar padding-top para compensar a navbar
+        .sidebar-content {
+            padding-top: 4rem;
         }
     }
     
     @media (min-width: 768px) {
         position: relative;
         transform: translateX(0) !important;
+        height: auto;
+        
+        .sidebar-content {
+            padding-top: 1rem;
+        }
     }
 }
 
@@ -227,15 +240,20 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.6);
     z-index: 1039;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease-in-out;
+    backdrop-filter: blur(2px);
     
     &.show {
         opacity: 1;
         visibility: visible;
+    }
+    
+    @media (min-width: 768px) {
+        display: none !important;
     }
 }
 
@@ -329,9 +347,54 @@ body {
     // Tabelas responsivas
     .table-responsive {
         border: none;
+        border-radius: 0.5rem;
+        box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
         
         table {
             min-width: 600px;
+            margin-bottom: 0;
+            
+            th, td {
+                padding: 0.75rem 0.5rem;
+                vertical-align: middle;
+                border-color: rgba(0, 0, 0, 0.05);
+            }
+            
+            th {
+                background-color: #f8f9fa;
+                font-weight: 600;
+                font-size: 0.875rem;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                border-bottom: 2px solid #dee2e6;
+            }
+            
+            tbody tr {
+                transition: background-color 0.15s ease;
+                
+                &:hover {
+                    background-color: rgba(0, 0, 0, 0.02);
+                }
+            }
+        }
+        
+        // Scroll horizontal suave
+        &::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        &::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+            
+            &:hover {
+                background: #a8a8a8;
+            }
         }
     }
     
@@ -355,6 +418,44 @@ body {
         }
     }
     
+    // Melhorias específicas para tabelas em mobile
+    .table-responsive {
+        table {
+            th, td {
+                padding: 0.5rem 0.25rem;
+                font-size: 0.875rem;
+            }
+            
+            .btn {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+                
+                i {
+                    font-size: 0.75rem;
+                }
+            }
+            
+            .btn-group {
+                .btn {
+                    border-radius: 0.25rem;
+                    margin: 0 1px;
+                }
+            }
+        }
+    }
+    
+    // Ajustes para informações condensadas em mobile
+    .mobile-info {
+        font-size: 0.75rem;
+        color: #6c757d;
+        margin-top: 0.25rem;
+        
+        .badge {
+            font-size: 0.65rem;
+            padding: 0.25em 0.5em;
+        }
+    }
+    
     // Botões de ação em mobile
     .action-buttons {
         .btn {
@@ -365,8 +466,61 @@ body {
     
     // Cards do dashboard em mobile
      .row.g-4 {
-         .col-md-4 {
+         gap: 1rem;
+         
+         .col-12, .col-sm-6, .col-md-4 {
              margin-bottom: 1rem;
+             
+             .card {
+                 height: 100%;
+                 border: none;
+                 box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+                 transition: all 0.15s ease-in-out;
+                 
+                 &:hover {
+                     transform: translateY(-2px);
+                     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+                 }
+                 
+                 .card-body {
+                     padding: 1rem;
+                     
+                     .avatar {
+                         width: 48px;
+                         height: 48px;
+                         border-radius: 12px;
+                         display: flex;
+                         align-items: center;
+                         justify-content: center;
+                         
+                         i {
+                             font-size: 1.5rem;
+                         }
+                     }
+                     
+                     .card-title {
+                         font-size: 1.5rem;
+                         font-weight: 700;
+                         margin-bottom: 0.25rem;
+                     }
+                     
+                     .card-subtitle {
+                         font-size: 0.875rem;
+                         font-weight: 500;
+                         text-transform: uppercase;
+                         letter-spacing: 0.5px;
+                     }
+                 }
+             }
+         }
+     }
+     
+     // Gráficos responsivos
+     .chart-container {
+         height: 250px !important;
+         
+         canvas {
+             max-height: 250px;
          }
      }
      
@@ -600,36 +754,98 @@ main {
 // Responsive sidebar adjustments
 @media (min-width: 768px) {
     .sidebar {
-        position: fixed;
-        top: 61px;
-        bottom: 0;
-        left: 0;
-        z-index: 100;
+        position: static;
+        height: auto;
         padding: 0;
-        box-shadow: inset -1px 0 0 rgba(0, 0, 0, .1);
+        box-shadow: none;
+        border-right: 1px solid rgba(0, 0, 0, 0.1);
     }
     
     main {
         margin-left: 0;
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .container-fluid {
+        .row {
+            margin: 0;
+        }
     }
 }
 
 @media (max-width: 767.98px) {
-    .sidebar {
-        position: static;
-        height: auto;
-        padding-top: 1rem;
-        margin-bottom: 1rem;
-        box-shadow: 0 1px 0 rgba(0, 0, 0, .1);
+    .container-fluid {
+        padding: 0;
+    }
+    
+    main {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
         
-        &.collapse:not(.show) {
-            display: none;
-        }
-        
-        &.collapse.show {
-            display: block;
+        .px-md-4 {
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
         }
     }
+    
+    // Ajustar cabeçalhos de página
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 1rem;
+        
+        h1 {
+            margin-bottom: 0;
+            font-size: 1.5rem;
+        }
+        
+        .btn, .btn-group {
+             width: 100%;
+         }
+     }
+     
+     // Formulários responsivos
+     .card {
+         margin-bottom: 1rem;
+         
+         .card-body {
+             padding: 1rem;
+         }
+     }
+     
+     .form-label {
+         font-size: 0.9rem;
+         font-weight: 600;
+         margin-bottom: 0.5rem;
+     }
+     
+     .form-control, .form-select {
+         font-size: 1rem;
+         padding: 0.75rem;
+         border-radius: 0.5rem;
+         
+         &:focus {
+             box-shadow: 0 0 0 0.2rem rgba(0, 74, 124, 0.25);
+         }
+     }
+     
+     // Botões de formulário em mobile
+     .d-grid {
+         gap: 0.75rem;
+         
+         .btn {
+             padding: 0.75rem 1rem;
+             font-size: 1rem;
+             border-radius: 0.5rem;
+         }
+     }
+     
+     // Ajustar grid de formulários
+     .row {
+         .col-12, .col-sm-6, .col-md-3, .col-md-4, .col-md-6, .col-lg-3 {
+             margin-bottom: 1rem;
+         }
+     }
     
     .btn-toolbar {
         flex-direction: column;
