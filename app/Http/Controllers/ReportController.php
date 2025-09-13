@@ -578,33 +578,7 @@ class ReportController extends Controller
         }
     }
 
-    private function prepareCustomReport($filters)
-    {
-        $query = Transaction::query()
-            ->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
 
-        $this->applyFilters($query, $filters);
-
-        $items = $query->with(['category', 'expenseClassification'])
-            ->orderBy('date')
-            ->get()
-            ->map(function($transaction) {
-                return [
-                    'date' => $transaction->date,
-                    'type' => $transaction->type === 'revenue' ? 'Receita' : 'Despesa',
-                    'category' => $transaction->category->name,
-                    'classification' => $transaction->expenseClassification?->name ?? '-',
-                    'description' => $transaction->description,
-                    'amount' => $transaction->amount,
-                ];
-            });
-
-        return [
-            'items' => $items,
-            'filters' => $filters,
-            'metadata' => $this->getMetadata($filters, 'Relatório Personalizado')
-        ];
-    }
 
     private function applyFilters($query, $filters)
     {
@@ -819,4 +793,4 @@ class ReportController extends Controller
             throw $e;
         }
     }
-} 
+}

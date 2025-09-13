@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transaction;
+use App\Models\Revenue;
+use App\Models\Expense;
 use App\Models\Category;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -32,25 +33,21 @@ class HomeController extends Controller
         $lastMonth = Carbon::now()->subMonth();
 
         // Receitas e Despesas do Mês Atual
-        $monthlyRevenue = Transaction::whereYear('date', $currentMonth->year)
+        $monthlyRevenue = Revenue::whereYear('date', $currentMonth->year)
             ->whereMonth('date', $currentMonth->month)
-            ->where('type', 'revenue')
             ->sum('amount');
 
-        $monthlyExpense = Transaction::whereYear('date', $currentMonth->year)
+        $monthlyExpense = Expense::whereYear('date', $currentMonth->year)
             ->whereMonth('date', $currentMonth->month)
-            ->where('type', 'expense')
             ->sum('amount');
 
         // Receitas e Despesas do Mês Anterior
-        $lastMonthRevenue = Transaction::whereYear('date', $lastMonth->year)
+        $lastMonthRevenue = Revenue::whereYear('date', $lastMonth->year)
             ->whereMonth('date', $lastMonth->month)
-            ->where('type', 'revenue')
             ->sum('amount');
 
-        $lastMonthExpense = Transaction::whereYear('date', $lastMonth->year)
+        $lastMonthExpense = Expense::whereYear('date', $lastMonth->year)
             ->whereMonth('date', $lastMonth->month)
-            ->where('type', 'expense')
             ->sum('amount');
 
         // Cálculo do crescimento
@@ -78,10 +75,37 @@ class HomeController extends Controller
         $classificationData = $this->getClassificationChartData();
 
         // Últimas Transações
-        $recentTransactions = Transaction::with('category')
+        $recentRevenues = Revenue::with(['fonte', 'acao'])
             ->latest('date')
-            ->take(5)
-            ->get();
+            ->take(3)
+            ->get()
+            ->map(function($revenue) {
+                return (object) [
+                    'date' => $revenue->date,
+                    'description' => $revenue->description,
+                    'amount' => $revenue->amount,
+                    'type' => 'revenue',
+                    'category' => $revenue->acao ?? $revenue->fonte
+                ];
+            });
+
+        $recentExpenses = Expense::with(['fonte', 'acao'])
+            ->latest('date')
+            ->take(3)
+            ->get()
+            ->map(function($expense) {
+                return (object) [
+                    'date' => $expense->date,
+                    'description' => $expense->description,
+                    'amount' => $expense->amount,
+                    'type' => 'expense',
+                    'category' => $expense->acao ?? $expense->fonte
+                ];
+            });
+
+        $recentTransactions = $recentRevenues->merge($recentExpenses)
+            ->sortByDesc('date')
+            ->take(5);
 
         return view('home', compact(
             'monthlyRevenue',
@@ -110,15 +134,13 @@ class HomeController extends Controller
             $date = Carbon::now()->subMonths($i);
             $months->push($date->format('M/Y'));
 
-            $monthRevenue = Transaction::whereYear('date', $date->year)
+            $monthRevenue = Revenue::whereYear('date', $date->year)
                 ->whereMonth('date', $date->month)
-                ->where('type', 'revenue')
                 ->sum('amount');
             $revenues->push($monthRevenue);
 
-            $monthExpense = Transaction::whereYear('date', $date->year)
+            $monthExpense = Expense::whereYear('date', $date->year)
                 ->whereMonth('date', $date->month)
-                ->where('type', 'expense')
                 ->sum('amount');
             $expenses->push($monthExpense);
         }
@@ -137,11 +159,10 @@ class HomeController extends Controller
     {
         $currentMonth = Carbon::now();
 
-        $classifications = Transaction::select('categories.name', DB::raw('SUM(transactions.amount) as total'))
-            ->join('categories', 'transactions.category_id', '=', 'categories.id')
-            ->where('transactions.type', 'expense')
-            ->whereYear('transactions.date', $currentMonth->year)
-            ->whereMonth('transactions.date', $currentMonth->month)
+        $classifications = Expense::select('categories.name', DB::raw('SUM(expenses.amount) as total'))
+            ->join('categories', 'expenses.fonte_id', '=', 'categories.id')
+            ->whereYear('expenses.date', $currentMonth->year)
+            ->whereMonth('expenses.date', $currentMonth->month)
             ->groupBy('categories.id', 'categories.name')
             ->orderByDesc('total')
             ->limit(10)
