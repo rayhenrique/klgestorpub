@@ -1,9 +1,30 @@
-# 🚀 KL Gestor Pub - VPS Deployment Guide
+# 🚀 KL Gestor Pub - Deployment Guide v1.4.0
 
-This directory contains all the necessary scripts and configurations for deploying KL Gestor Pub to a VPS server.
+This directory contains all the necessary scripts and configurations for deploying KL Gestor Pub to production environments. Choose between traditional VPS deployment or modern Docker containerization.
+
+## 🎯 Deployment Options
+
+### 🐳 Docker Deployment (Recommended)
+- **Containerized environment** with all dependencies
+- **Easy scaling** and maintenance
+- **Consistent environment** across different servers
+- **Quick setup** with automated scripts
+
+### 🖥️ Traditional VPS Deployment
+- **Direct server installation** on Ubuntu
+- **Full control** over system configuration
+- **Custom optimization** possibilities
 
 ## 📋 Prerequisites
 
+### For Docker Deployment
+- Ubuntu 20.04+ VPS server with Docker support
+- **Docker** and **Docker Compose** installed
+- **4GB RAM** minimum
+- **20GB** disk space
+- Domain name pointing to your server IP
+
+### For Traditional VPS Deployment
 - Ubuntu 20.04+ VPS server
 - Root or sudo access
 - Domain name pointing to your server IP
@@ -11,8 +32,49 @@ This directory contains all the necessary scripts and configurations for deployi
 
 ## 🛠️ Deployment Steps
 
-### 1. Server Setup
+### 🐳 Docker Deployment (v1.4.0)
 
+#### 1. Clone and Setup
+```bash
+# Clone repository
+git clone https://github.com/your-repo/klgestorpub.git
+cd klgestorpub
+
+# Copy production environment
+cp .env.docker .env
+
+# Edit environment variables
+nano .env
+```
+
+#### 2. Production Build
+```bash
+# Build production images
+./docker-build.sh production
+
+# Start production services
+docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+```
+
+#### 3. Initialize Application
+```bash
+# Run migrations and seed
+docker-compose exec app php artisan migrate --force
+docker-compose exec app php artisan db:seed --force
+
+# Optimize for production
+docker-compose exec app php artisan optimize
+```
+
+#### 4. SSL Setup (Nginx Proxy)
+```bash
+# Setup reverse proxy with SSL
+./deployment/setup-docker-ssl.sh your-domain.com
+```
+
+### 🖥️ Traditional VPS Deployment
+
+#### 1. Server Setup
 ```bash
 # Make script executable
 chmod +x deployment/setup-server.sh
@@ -21,8 +83,7 @@ chmod +x deployment/setup-server.sh
 ./deployment/setup-server.sh
 ```
 
-### 2. Database Setup
-
+#### 2. Database Setup
 ```bash
 # Make script executable
 chmod +x deployment/setup-database.sh
@@ -31,8 +92,7 @@ chmod +x deployment/setup-database.sh
 ./deployment/setup-database.sh
 ```
 
-### 3. Application Deployment
-
+#### 3. Application Deployment
 ```bash
 # Make script executable
 chmod +x deployment/deploy-app.sh
@@ -41,8 +101,7 @@ chmod +x deployment/deploy-app.sh
 ./deployment/deploy-app.sh
 ```
 
-### 4. SSL Certificate (Optional but Recommended)
-
+#### 4. SSL Certificate (Optional but Recommended)
 ```bash
 # Make script executable
 chmod +x deployment/setup-ssl.sh
@@ -53,6 +112,16 @@ chmod +x deployment/setup-ssl.sh
 
 ## 📁 Files Description
 
+### Docker Deployment Files (v1.4.0)
+| File | Description |
+|------|-------------|
+| `docker-build.sh` | Build Docker images for production |
+| `docker-compose.prod.yml` | Production Docker Compose override |
+| `setup-docker-ssl.sh` | SSL setup for Docker deployment |
+| `nginx-proxy.conf` | Nginx reverse proxy configuration |
+| `.env.docker` | Docker environment template |
+
+### Traditional VPS Files
 | File | Description |
 |------|-------------|
 | `setup-server.sh` | Initial server setup with Nginx, PHP, MySQL, Node.js |
@@ -65,8 +134,37 @@ chmod +x deployment/setup-ssl.sh
 
 ## ⚙️ Configuration
 
+### 🆕 v1.4.0 Improvements
+
+#### Responsive Design
+- **Mobile-first approach** with breakpoints for all devices
+- **Touch-optimized interface** for tablets and smartphones
+- **Collapsible sidebar** with smooth animations
+- **Adaptive tables** with horizontal scroll on mobile
+
+#### Backup System
+- **Automated backup creation** via web interface
+- **Secure download** with authentication
+- **Intelligent restoration** with pre-backup safety
+- **Command-line tools** for automated backups
+
+#### Enhanced Security
+- **WAI-ARIA compliance** for accessibility
+- **Improved input validation** with custom Form Requests
+- **Enhanced error handling** with user-friendly messages
+- **Optimized database queries** for better performance
+
 ### Environment Variables
 
+#### Docker Environment
+Copy `.env.docker` to `.env` and configure:
+
+```bash
+cp .env.docker .env
+nano .env
+```
+
+#### Traditional VPS Environment
 Copy `.env.production` to `.env` and configure:
 
 ```bash
@@ -76,8 +174,9 @@ nano .env
 
 Key settings to configure:
 - `APP_URL` - Your domain URL
-- `DB_*` - Database credentials (from setup-database.sh output)
+- `DB_*` - Database credentials
 - `MAIL_*` - Email configuration
+- `BACKUP_*` - Backup system settings (v1.4.0)
 - Domain-specific settings
 
 ### Nginx Configuration

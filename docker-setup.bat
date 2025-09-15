@@ -1,0 +1,3 @@
+@echo off
+echo Setting up KL Gestor Pub Docker environment...
+bash docker-setup.sh

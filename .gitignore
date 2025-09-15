@@ -13,3 +13,27 @@ npm-debug.log
 yarn-error.log
 /.idea
 /.vscode
+
+# SSH Keys and sensitive files
+deploy
+deploy.pub
+deploy_key
+deploy_key.pub
+*.pem
+*.key
+
+# Infrastructure (moved to infrastructure/)
+/infrastructure/logs/
+/infrastructure/secrets/
+/infrastructure/volumes/
+
+# Development artifacts (removed)
+/municipalities/
+/scripts/
+/config/municipalities/
+
+# Build artifacts (keep only latest)
+/public/build/assets/app-*.css
+/public/build/assets/app-*.js
+!/public/build/assets/app-BNYLBbB9.css
+!/public/build/assets/app-CyGjzoKw.js

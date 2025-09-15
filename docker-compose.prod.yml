@@ -1,0 +1,68 @@
+# Production override for docker-compose.yml
+# Use: docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+version: '3.8'
+
+services:
+  # Laravel Application - Production
+  app:
+    build:
+      target: production
+    environment:
+      - APP_ENV=production
+      - APP_DEBUG=false
+      - LOG_LEVEL=warning
+      - OPCACHE_ENABLE=1
+    volumes:
+      # Remove source code volume in production
+      - storage_data:/var/www/html/storage
+      - bootstrap_cache:/var/www/html/bootstrap/cache
+    restart: always
+
+  # Nginx - Production
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - storage_data:/var/www/html/storage
+      - ./deployment/docker/nginx/ssl:/etc/nginx/ssl:ro
+    restart: always
+
+  # MySQL - Production
+  mysql:
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-secure_root_password}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-secure_klgestorpub_password}
+    volumes:
+      - mysql_prod_data:/var/lib/mysql
+    restart: always
+    command: >
+      --default-authentication-plugin=mysql_native_password
+      --innodb-buffer-pool-size=512M
+      --innodb-log-file-size=128M
+      --max-connections=200
+      --query-cache-size=0
+      --query-cache-type=0
+
+  # Redis - Production
+  redis:
+    volumes:
+      - redis_prod_data:/data
+    restart: always
+    command: >
+      redis-server
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+
+# Production volumes
+volumes:
+  mysql_prod_data:
+    driver: local
+  redis_prod_data:
+    driver: local
+  storage_data:
+    driver: local
+  bootstrap_cache:
+    driver: local

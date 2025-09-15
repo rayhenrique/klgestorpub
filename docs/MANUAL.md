@@ -19,13 +19,15 @@
 
 O **KL Gestor Pub** é um sistema completo para gestão de contas públicas municipais, desenvolvido para facilitar o controle financeiro, geração de relatórios e auditoria de operações. Este manual irá guiá-lo através de todas as funcionalidades do sistema.
 
-### Características Principais:
-- ✅ Controle detalhado de receitas e despesas
-- ✅ Sistema hierárquico de categorização
-- ✅ Relatórios avançados com exportação
-- ✅ Auditoria completa de operações
-- ✅ Interface em português brasileiro
-- ✅ Design responsivo para todos os dispositivos
+### Características Principais da v1.4.0:
+- ✅ **Sistema 100% Responsivo**: Interface adaptada para mobile, tablet e desktop
+- ✅ **Controle Financeiro Completo**: Receitas e despesas com categorização hierárquica
+- ✅ **Sistema de Backup Avançado**: Backup e restauração via interface web
+- ✅ **Relatórios Profissionais**: Exportação para PDF e Excel com formatação brasileira
+- ✅ **Auditoria Completa**: Rastreamento de todas as operações do sistema
+- ✅ **Acessibilidade WAI-ARIA**: Compatível com leitores de tela e navegação por teclado
+- ✅ **Docker Ready**: Configuração completa para containerização
+- ✅ **Interface Moderna**: Design limpo em português brasileiro
 
 ---
 
@@ -54,31 +56,71 @@ O **KL Gestor Pub** é um sistema completo para gestão de contas públicas muni
 
 ---
 
-## 📊 Dashboard
+## 📊 Dashboard Responsivo
 
-O dashboard é a tela principal do sistema, oferecendo uma visão geral das finanças municipais.
+O dashboard é a tela principal do sistema, oferecendo uma visão geral das finanças municipais com design totalmente responsivo.
+
+### 📱 **Interface Responsiva (Novidade v1.4.0)**
+
+#### **Desktop (>1024px)**
+- Layout completo com sidebar fixa
+- Cards em grid de 4 colunas
+- Gráficos em tela cheia
+- Tabelas com todas as colunas visíveis
+
+#### **Tablet (768px-1024px)**
+- Sidebar colapsável
+- Cards em grid de 2 colunas
+- Gráficos adaptados
+- Scroll horizontal em tabelas
+
+#### **Mobile (<768px)**
+- **Menu Hamburger**: Toque no ícone ☰ para abrir o menu
+- **Sidebar Overlay**: Menu sobrepõe o conteúdo com fundo escuro
+- **Cards Empilhados**: Layout vertical otimizado
+- **Tabelas Responsivas**: Colunas essenciais apenas
+- **Botões Touch-Friendly**: Área mínima de 44px para toque
 
 ### Métricas Principais
 
-#### 💰 **Cards de Resumo**
+#### 💰 **Cards de Resumo Responsivos**
 - **Receitas do Período**: Total de receitas no período selecionado
 - **Despesas do Período**: Total de despesas no período selecionado
-- **Saldo**: Diferença entre receitas e despesas
+- **Saldo**: Diferença entre receitas e despesas (verde/vermelho)
 - **Variação %**: Comparação com o período anterior
 
-#### 📈 **Gráficos Interativos**
-- **Gráfico de Tendência**: Evolução das receitas e despesas nos últimos 6 períodos
-- **Gráfico de Categorias**: Top 5 categorias de despesas do período
+> 📱 **Mobile**: Cards empilhados verticalmente com ícones grandes
+
+#### 📈 **Gráficos Interativos Adaptativos**
+- **Gráfico de Tendência**: Evolução das receitas e despesas
+- **Gráfico de Categorias**: Top 5 categorias de despesas
+- **Responsividade**: Gráficos se ajustam automaticamente ao tamanho da tela
 
 #### 📋 **Últimas Transações**
 - Lista das 5 transações mais recentes
-- Tipo (Receita/Despesa), valor e data
+- **Desktop**: Tabela completa com todas as colunas
+- **Mobile**: Layout de cards com informações essenciais
 - Links diretos para edição
+
+### Navegação Mobile
+
+#### **Menu Hamburger (☰)**
+1. **Toque no ícone** no canto superior esquerdo
+2. **Menu desliza** da esquerda para direita
+3. **Overlay escuro** aparece sobre o conteúdo
+4. **Toque fora** ou no X para fechar
+
+#### **Gestos Touch**
+- **Swipe**: Deslize para navegar em tabelas
+- **Tap**: Toque para selecionar itens
+- **Long Press**: Pressione e segure para opções
 
 ### Filtros de Período
 - **Mensal**: Dados do mês atual vs mês anterior
 - **Trimestral**: Dados do trimestre atual vs anterior
 - **Anual**: Dados do ano atual vs ano anterior
+
+> 📱 **Mobile**: Filtros em dropdown compacto
 
 ---
 
@@ -294,6 +336,8 @@ Fonte (Nível 1)
 - **Filtros**: Use filtros para focar em categorias específicas
 - **Comparação**: Gere relatórios de períodos similares para comparar
 - **Backup**: Mantenha cópias dos relatórios importantes
+- **📱 Mobile**: Use orientação paisagem para melhor visualização de relatórios
+- **🖨️ Impressão**: PDFs são otimizados para impressão em A4
 
 ---
 
@@ -350,6 +394,111 @@ O sistema de auditoria registra todas as operações realizadas, garantindo tran
 - **Clique em qualquer log** para ver detalhes completos
 - **Compare valores** lado a lado
 - **Veja metadados** como IP e user agent
+
+---
+
+## 💾 Sistema de Backup e Restauração (Novidade v1.4.0)
+
+O KL Gestor Pub agora possui um sistema completo de backup e restauração, permitindo proteger e recuperar dados de forma segura.
+
+### 🔐 **Acesso ao Sistema de Backup**
+
+**Apenas administradores** podem acessar as funcionalidades de backup:
+1. **Faça login** como administrador
+2. **Acesse o menu "Configurações"**
+3. **Clique em "Backup"**
+
+### 📦 **Criando um Backup**
+
+#### **Via Interface Web:**
+1. **Na página de backup**, clique em "Criar Backup"
+2. **Aguarde o processamento** (pode levar alguns minutos)
+3. **Download automático** do arquivo .gz será iniciado
+4. **Salve o arquivo** em local seguro
+
+#### **Características do Backup:**
+- **Formato**: Arquivo SQL comprimido (.gz)
+- **Conteúdo**: Todos os dados do banco de dados
+- **Nomenclatura**: `backup_YYYY-MM-DD_HH-MM-SS.sql.gz`
+- **Compressão**: Reduz significativamente o tamanho do arquivo
+- **Integridade**: Verificação automática de consistência
+
+#### **Via Linha de Comando (Opcional):**
+```bash
+# Criar backup comprimido
+php artisan backup:database --compress
+
+# Criar backup em diretório específico
+php artisan backup:database --path=/caminho/personalizado/
+```
+
+### 🔄 **Restaurando um Backup**
+
+#### **Processo de Restauração:**
+1. **Na página de backup**, clique em "Restaurar Backup"
+2. **Selecione o arquivo** de backup (.sql ou .gz)
+3. **Confirme a operação** (⚠️ **ATENÇÃO**: Sobrescreverá dados atuais)
+4. **Aguarde o processamento** da restauração
+5. **Verificação automática** da integridade dos dados
+
+#### **⚠️ Medidas de Segurança:**
+- **Backup Automático**: Sistema cria backup atual antes de restaurar
+- **Validação de Arquivo**: Verifica integridade do arquivo enviado
+- **Confirmação Dupla**: Requer confirmação explícita do usuário
+- **Log de Auditoria**: Registra todas as operações de backup/restauração
+
+#### **Formatos Suportados:**
+- ✅ **Arquivos .sql**: Backup SQL puro
+- ✅ **Arquivos .gz**: Backup SQL comprimido
+- ❌ **Outros formatos**: Não suportados por segurança
+
+### 📋 **Gerenciamento de Backups**
+
+#### **Lista de Backups:**
+- **Visualização**: Lista todos os backups disponíveis
+- **Informações**: Nome, tamanho, data de criação
+- **Ações**: Download, restaurar, excluir
+- **Ordenação**: Por data (mais recente primeiro)
+
+#### **Download de Backups:**
+1. **Na lista**, clique no ícone de download (⬇️)
+2. **Autenticação**: Verifica permissões do usuário
+3. **Download seguro**: Arquivo é servido com headers de segurança
+
+#### **Exclusão de Backups:**
+1. **Na lista**, clique no ícone de exclusão (🗑️)
+2. **Confirme a exclusão** no modal
+3. **Arquivo removido** permanentemente do servidor
+
+### 🔒 **Segurança e Boas Práticas**
+
+#### **Recomendações de Segurança:**
+- 📅 **Backup Regular**: Crie backups semanalmente ou antes de grandes alterações
+- 🔐 **Armazenamento Seguro**: Mantenha backups em locais seguros e criptografados
+- 🌐 **Backup Externo**: Não mantenha apenas no servidor da aplicação
+- 👥 **Acesso Restrito**: Apenas administradores podem gerenciar backups
+- 📝 **Documentação**: Mantenha registro de quando e por que backups foram criados
+
+#### **Cenários de Uso:**
+- **🔄 Atualizações**: Antes de atualizar o sistema
+- **🛠️ Manutenção**: Antes de manutenções no servidor
+- **📊 Migração**: Para mover dados entre ambientes
+- **🚨 Recuperação**: Em caso de falhas ou corrupção de dados
+- **📋 Auditoria**: Para manter histórico de estados do sistema
+
+### 🚨 **Recuperação de Emergência**
+
+#### **Em Caso de Problemas:**
+1. **Mantenha a calma** e não faça alterações adicionais
+2. **Identifique o backup** mais recente e confiável
+3. **Execute a restauração** seguindo o processo padrão
+4. **Verifique a integridade** dos dados após restauração
+5. **Documente o incidente** para análise posterior
+
+#### **Suporte Técnico:**
+- **Email**: rayhenrique@gmail.com
+- **Resposta**: Até 24 horas em emergências
+- **Informações necessárias**: Descrição do problema, logs de erro, último backup conhecido
 
 ---
 
@@ -429,7 +578,7 @@ O sistema de auditoria registra todas as operações realizadas, garantindo tran
 
 ## 🆘 FAQ e Troubleshooting
 
-### Perguntas Frequentes
+### Perguntas Frequentes (v1.4.0)
 
 #### ❓ **Posso cadastrar receitas/despesas futuras?**
 **R:** Não, o sistema não permite datas futuras para manter a integridade dos dados financeiros.
@@ -444,23 +593,46 @@ O sistema de auditoria registra todas as operações realizadas, garantindo tran
 **R:** Não há limite, mas períodos muito longos podem demorar para processar.
 
 #### ❓ **Como recuperar uma receita/despesa excluída?**
-**R:** Não é possível recuperar. Use os logs de auditoria para ver os dados e recadastre se necessário.
+**R:** Não é possível recuperar diretamente. Use os logs de auditoria para ver os dados e recadastre, ou restaure um backup anterior.
 
-### Problemas Comuns
+#### ❓ **O sistema funciona bem no celular?** 🆕
+**R:** Sim! A v1.4.0 é 100% responsiva. Use o menu hamburger (☰) para navegar no mobile.
+
+#### ❓ **Como faço backup dos dados?** 🆕
+**R:** Administradores podem acessar Configurações → Backup para criar e gerenciar backups automaticamente.
+
+#### ❓ **Posso usar o sistema offline?**
+**R:** Não, o sistema requer conexão com internet para funcionar.
+
+#### ❓ **Como instalar usando Docker?** 🆕
+**R:** Execute `docker-setup.bat` (Windows) ou `./docker-setup.sh` (Linux/Mac) na raiz do projeto.
+
+#### ❓ **O sistema é acessível para pessoas com deficiência?** 🆕
+**R:** Sim! A v1.4.0 implementa WAI-ARIA e é compatível com leitores de tela e navegação por teclado.
+
+#### ❓ **Posso personalizar as categorias?**
+**R:** Sim, administradores podem criar, editar e organizar categorias conforme necessário.
+
+#### ❓ **Como exportar dados para Excel?**
+**R:** Nos relatórios, selecione "Exportar para Excel" após configurar os filtros desejados.
+
+### Problemas Comuns (v1.4.0)
 
 #### 🔧 **Sistema lento ou não carrega**
 **Soluções:**
-1. Limpe o cache do navegador
+1. Limpe o cache do navegador (Ctrl+F5)
 2. Verifique sua conexão com a internet
 3. Tente usar outro navegador
-4. Entre em contato com o suporte
+4. **Mobile**: Feche outros apps para liberar memória
+5. Entre em contato com o suporte
 
 #### 🔧 **Erro ao salvar dados**
 **Soluções:**
 1. Verifique se todos os campos obrigatórios estão preenchidos
-2. Confirme se as datas estão no formato correto
+2. Confirme se as datas estão no formato correto (dd/mm/yyyy)
 3. Verifique se os valores não têm caracteres especiais
-4. Tente novamente após alguns minutos
+4. **Mobile**: Verifique se o teclado não está cobrindo campos
+5. Tente novamente após alguns minutos
 
 #### 🔧 **Não consigo gerar relatórios**
 **Soluções:**
@@ -468,13 +640,47 @@ O sistema de auditoria registra todas as operações realizadas, garantindo tran
 2. Confirme se os filtros não estão muito restritivos
 3. Tente um período menor
 4. Verifique sua permissão de usuário
+5. **Mobile**: Use orientação paisagem para relatórios grandes
 
 #### 🔧 **Categorias não carregam dinamicamente**
 **Soluções:**
-1. Recarregue a página
+1. Recarregue a página (F5)
 2. Verifique se há categorias cadastradas no nível superior
 3. Confirme se as categorias estão ativas
 4. Limpe o cache do navegador
+5. **Mobile**: Verifique se o JavaScript está habilitado
+
+#### 🔧 **Menu não abre no celular** 🆕
+**Soluções:**
+1. Toque diretamente no ícone ☰ (hamburger)
+2. Verifique se o JavaScript está habilitado
+3. Recarregue a página
+4. Tente em modo paisagem
+5. Use um navegador atualizado
+
+#### 🔧 **Erro no backup/restauração** 🆕
+**Soluções:**
+1. Verifique se você é administrador
+2. Confirme se o arquivo é .sql ou .gz
+3. Verifique o tamanho do arquivo (máx. 100MB)
+4. Tente com conexão mais estável
+5. Entre em contato com suporte se persistir
+
+#### 🔧 **Docker não inicia** 🆕
+**Soluções:**
+1. Verifique se o Docker está instalado e rodando
+2. Execute como administrador (Windows)
+3. Verifique se as portas 8080, 8081, 8025 estão livres
+4. Consulte logs: `docker-compose logs`
+5. Reinicie o Docker Desktop
+
+#### 🔧 **Interface quebrada no mobile** 🆕
+**Soluções:**
+1. Atualize o navegador para versão mais recente
+2. Limpe cache e cookies
+3. Desative extensões do navegador
+4. Tente modo anônimo/privado
+5. Verifique se CSS está carregando (F12 → Network)
 
 ### Navegadores Suportados
 

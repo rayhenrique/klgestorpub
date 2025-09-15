@@ -118,6 +118,44 @@ O **KL Gestor Pub** é uma solução completa e moderna para gestão de contas p
 - Interface responsiva
 - Temas personalizáveis
 
+## 📁 Estrutura do Projeto
+
+O projeto segue uma estrutura organizada e limpa, seguindo as melhores práticas do Laravel:
+
+```
+klgestorpub/
+├── app/                    # Código da aplicação Laravel
+│   ├── Console/           # Comandos Artisan customizados
+│   ├── Http/              # Controllers, Middleware, Requests
+│   ├── Models/            # Models Eloquent
+│   ├── Services/          # Camada de serviços
+│   └── Traits/            # Traits reutilizáveis
+├── config/                # Configurações da aplicação
+├── database/              # Migrações, seeders e factories
+├── deployment/            # Scripts e configurações de deploy
+│   ├── docker/           # Configurações Docker (movido)
+│   └── *.sh              # Scripts de instalação
+├── docs/                  # Documentação do projeto
+├── infrastructure/        # Arquivos de infraestrutura
+│   ├── logs/             # Logs externos (nginx, etc.)
+│   ├── secrets/          # Arquivos sensíveis
+│   └── volumes/          # Volumes Docker
+├── lang/                  # Arquivos de tradução
+├── public/                # Assets públicos
+├── resources/             # Views, CSS, JS, SASS
+├── routes/                # Definições de rotas
+├── storage/               # Arquivos de cache e logs Laravel
+└── tests/                 # Testes automatizados
+```
+
+### **Organização Melhorada:**
+- ✅ **Arquivos SSH removidos** da raiz (segurança)
+- ✅ **Diretórios vazios removidos** (municipalities, scripts, ssl-certificates)
+- ✅ **Infrastructure centralizada** em `/infrastructure/`
+- ✅ **Docker movido** para `/deployment/docker/`
+- ✅ **Assets otimizados** (apenas versões mais recentes)
+- ✅ **Gitignore atualizado** para nova estrutura
+
 ## 📋 Requisitos do Sistema
 
 ### **Requisitos Mínimos:**
@@ -136,9 +174,69 @@ O **KL Gestor Pub** é uma solução completa e moderna para gestão de contas p
 - **Disco**: Mínimo 1GB livre
 - **Processador**: Qualquer arquitetura x64
 
-## 🛠️ Instalação Local
+## 🛠️ Instalação
 
-### **Passo a Passo Completo:**
+### 🐳 **Instalação com Docker (Recomendado)**
+
+A forma mais rápida e confiável de executar o KL Gestor Pub é usando Docker:
+
+#### **Windows:**
+```powershell
+# PowerShell
+# 1. Clonar o repositório
+git clone https://github.com/rayhenrique/klgestorpub.git
+cd klgestorpub
+
+# 2. Configurar ambiente Docker
+.\docker-setup.bat
+
+# 3. Iniciar aplicação
+.\docker-start.bat
+
+# 4. Acessar: http://localhost:8080
+```
+
+```cmd
+# Command Prompt
+# 1. Clonar o repositório
+git clone https://github.com/rayhenrique/klgestorpub.git
+cd klgestorpub
+
+# 2. Configurar ambiente Docker
+docker-setup.bat
+
+# 3. Iniciar aplicação
+docker-start.bat
+
+# 4. Acessar: http://localhost:8080
+```
+
+#### **Linux/Mac:**
+```bash
+# 1. Clonar o repositório
+git clone https://github.com/rayhenrique/klgestorpub.git
+cd klgestorpub
+
+# 2. Dar permissões e configurar
+chmod +x docker-*.sh
+./docker-setup.sh
+
+# 3. Iniciar aplicação
+./docker-start.sh
+
+# 4. Acessar: http://localhost:8080
+```
+
+#### **Serviços Disponíveis:**
+- **Aplicação:** http://localhost:8080
+- **phpMyAdmin:** http://localhost:8081
+- **Mailhog:** http://localhost:8025
+- **Health Check:** http://localhost:8080/health
+
+### 💻 **Instalação Local (Tradicional)**
+
+#### **Pré-requisitos:**
+- PHP 8.2+, MySQL 8.0+, Node.js 18+, Composer 2.0+
 
 ```bash
 # 1. Clonar o repositório
