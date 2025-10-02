@@ -66,6 +66,9 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+    // Base URL para assets estáticos. Permite hospedar a aplicação em subcaminhos
+    // enquanto os assets são servidos da raiz do domínio.
+    'asset_url' => env('ASSET_URL'),
 
     /*
     |--------------------------------------------------------------------------
