@@ -80,14 +80,14 @@
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="start_date" class="form-label">Data Inicial</label>
-                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" lang="pt-BR" required>
                                 </div>
                             </div>
 
                             <div class="col-md-3">
                                 <div class="mb-3">
                                     <label for="end_date" class="form-label">Data Final</label>
-                                    <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                    <input type="date" class="form-control" id="end_date" name="end_date" lang="pt-BR" required>
                                 </div>
                             </div>
 
@@ -415,4 +415,4 @@ function showInfo(message) {
 }
 </script>
 @endpush
-@endsection 
+@endsection

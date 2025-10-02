@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>{{ $metadata['type'] }}</title>
+    <title>{{ config('app.name') }} - {{ $metadata['type'] }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;

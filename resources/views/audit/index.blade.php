@@ -50,13 +50,13 @@
                         <div class="col-md-2">
                             <label for="date_start" class="form-label">Data Inicial</label>
                             <input type="date" class="form-control" id="date_start" name="date_start" 
-                                value="{{ request('date_start') }}">
+                                value="{{ request('date_start') }}" lang="pt-BR">
                         </div>
 
                         <div class="col-md-2">
                             <label for="date_end" class="form-label">Data Final</label>
                             <input type="date" class="form-control" id="date_end" name="date_end" 
-                                value="{{ request('date_end') }}">
+                                value="{{ request('date_end') }}" lang="pt-BR">
                         </div>
 
                         <div class="col-12">
@@ -114,4 +114,4 @@
         </main>
     </div>
 </div>
-@endsection 
+@endsection

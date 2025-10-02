@@ -57,6 +57,7 @@
                                        id="date" 
                                        name="date" 
                                        value="{{ old('date', $revenue->date->format('Y-m-d')) }}" 
+                                       lang="pt-BR"
                                        required>
                                 @error('date')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -262,4 +263,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
-@endsection 
+@endsection

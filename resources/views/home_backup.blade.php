@@ -30,7 +30,7 @@
                             <div class="row">
                                 <div class="col">
                                     <h6 class="text-uppercase text-muted mb-2">Receitas do Mês</h6>
-                                    <h4 class="mb-0 text-success">R$ {{ number_format($monthlyRevenue ?? 0, 2, ',', '.') }}</h4>
+                                    <h4 class="mb-0 text-success">R$ {{ number_format($currentRevenues ?? 0, 2, ',', '.') }}</h4>
                                 </div>
                                 <div class="col-auto">
                                     <div class="icon-circle bg-success bg-opacity-10">
@@ -39,10 +39,17 @@
                                 </div>
                             </div>
                             <div class="mt-2">
+                                @if(isset($revenueGrowth))
                                 <span class="text-{{ $revenueGrowth > 0 ? 'success' : 'danger' }} me-2">
                                     <i class="fas fa-{{ $revenueGrowth > 0 ? 'arrow-up' : 'arrow-down' }}"></i>
                                     {{ abs($revenueGrowth) }}%
                                 </span>
+                                @else
+                                <span class="text-muted me-2">
+                                    <i class="fas fa-minus"></i>
+                                    N/A
+                                </span>
+                                @endif
                                 <small class="text-muted">vs mês anterior</small>
                             </div>
                         </div>
@@ -56,7 +63,7 @@
                             <div class="row">
                                 <div class="col">
                                     <h6 class="text-uppercase text-muted mb-2">Despesas do Mês</h6>
-                                    <h4 class="mb-0 text-danger">R$ {{ number_format($monthlyExpense ?? 0, 2, ',', '.') }}</h4>
+                                    <h4 class="mb-0 text-danger">R$ {{ number_format($currentExpenses ?? 0, 2, ',', '.') }}</h4>
                                 </div>
                                 <div class="col-auto">
                                     <div class="icon-circle bg-danger bg-opacity-10">
@@ -65,10 +72,17 @@
                                 </div>
                             </div>
                             <div class="mt-2">
-                                <span class="text-{{ $expenseGrowth < 0 ? 'success' : 'danger' }} me-2">
-                                    <i class="fas fa-{{ $expenseGrowth < 0 ? 'arrow-down' : 'arrow-up' }}"></i>
+                                @if(isset($expenseGrowth))
+                                <span class="text-{{ $expenseGrowth > 0 ? 'danger' : 'success' }} me-2">
+                                    <i class="fas fa-{{ $expenseGrowth > 0 ? 'arrow-up' : 'arrow-down' }}"></i>
                                     {{ abs($expenseGrowth) }}%
                                 </span>
+                                @else
+                                <span class="text-muted me-2">
+                                    <i class="fas fa-minus"></i>
+                                    N/A
+                                </span>
+                                @endif
                                 <small class="text-muted">vs mês anterior</small>
                             </div>
                         </div>
@@ -82,8 +96,8 @@
                             <div class="row">
                                 <div class="col">
                                     <h6 class="text-uppercase text-muted mb-2">Saldo do Mês</h6>
-                                    <h4 class="mb-0 {{ ($monthlyRevenue ?? 0) - ($monthlyExpense ?? 0) >= 0 ? 'text-primary' : 'text-danger' }}">
-                                        R$ {{ number_format(($monthlyRevenue ?? 0) - ($monthlyExpense ?? 0), 2, ',', '.') }}
+                                    <h4 class="mb-0 {{ ($currentBalance ?? 0) >= 0 ? 'text-primary' : 'text-danger' }}">
+                                    R$ {{ number_format($currentBalance ?? 0, 2, ',', '.') }}
                                     </h4>
                                 </div>
                                 <div class="col-auto">
@@ -93,10 +107,17 @@
                                 </div>
                             </div>
                             <div class="mt-2">
+                                @if(isset($balanceGrowth))
                                 <span class="text-{{ $balanceGrowth > 0 ? 'success' : 'danger' }} me-2">
                                     <i class="fas fa-{{ $balanceGrowth > 0 ? 'arrow-up' : 'arrow-down' }}"></i>
                                     {{ abs($balanceGrowth) }}%
                                 </span>
+                                @else
+                                <span class="text-muted me-2">
+                                    <i class="fas fa-minus"></i>
+                                    N/A
+                                </span>
+                                @endif
                                 <small class="text-muted">vs mês anterior</small>
                             </div>
                         </div>
@@ -110,7 +131,7 @@
                             <div class="row">
                                 <div class="col">
                                     <h6 class="text-uppercase text-muted mb-2">Classificações</h6>
-                                    <h4 class="mb-0 text-info">{{ $totalClassifications ?? 0 }}</h4>
+                                    <h4 class="mb-0 text-info">{{ $totalCategories ?? 0 }}</h4>
                                 </div>
                                 <div class="col-auto">
                                     <div class="icon-circle bg-info bg-opacity-10">
@@ -175,14 +196,14 @@
                                 <tbody>
                                     @forelse($recentTransactions ?? [] as $transaction)
                                     <tr>
-                                        <td>{{ $transaction->date->format('d/m/Y') }}</td>
+                                        <td>{{ \Carbon\Carbon::parse($transaction->date)->format('d/m/Y') }}</td>
                                         <td>
-                                            <span class="badge bg-{{ $transaction->type === 'revenue' ? 'success' : 'danger' }} bg-opacity-10 text-{{ $transaction->type === 'revenue' ? 'success' : 'danger' }}">
+                                            <span class="badge bg-{{ $transaction->badge_color }} bg-opacity-10 text-{{ $transaction->badge_color }}">
                                                 {{ $transaction->type === 'revenue' ? 'Receita' : 'Despesa' }}
                                             </span>
                                         </td>
                                         <td>{{ $transaction->description }}</td>
-                                        <td>{{ $transaction->category->name }}</td>
+                                        <td>{{ $transaction->category }}</td>
                                         <td class="text-end">R$ {{ number_format($transaction->amount, 2, ',', '.') }}</td>
                                     </tr>
                                     @empty
@@ -213,18 +234,18 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(balanceCtx, {
         type: 'line',
         data: {
-            labels: {!! json_encode($balanceChart['labels'] ?? []) !!},
+            labels: {!! json_encode($balanceChartData['labels'] ?? []) !!},
             datasets: [
                 {
                     label: 'Receitas',
-                    data: {!! json_encode($balanceChart['revenues'] ?? []) !!},
+                    data: {!! json_encode($balanceChartData['revenues'] ?? []) !!},
                     borderColor: '#28a745',
                     backgroundColor: 'rgba(40, 167, 69, 0.1)',
                     fill: true
                 },
                 {
                     label: 'Despesas',
-                    data: {!! json_encode($balanceChart['expenses'] ?? []) !!},
+                    data: {!! json_encode($balanceChartData['expenses'] ?? []) !!},
                     borderColor: '#dc3545',
                     backgroundColor: 'rgba(220, 53, 69, 0.1)',
                     fill: true
@@ -257,9 +278,9 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(classificationCtx, {
         type: 'doughnut',
         data: {
-            labels: {!! json_encode($classificationChart['labels'] ?? []) !!},
+            labels: {!! json_encode($expensesCategoryData['labels'] ?? []) !!},
             datasets: [{
-                data: {!! json_encode($classificationChart['data'] ?? []) !!},
+                data: {!! json_encode($expensesCategoryData['data'] ?? []) !!},
                 backgroundColor: [
                     '#0d6efd',
                     '#6610f2',

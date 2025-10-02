@@ -21,7 +21,7 @@
     <link href="https://fonts.bunny.net/css?family=Nunito" rel="stylesheet">
 
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="{{ asset('css/fontawesome/all.min.css') }}">
 
     <!-- SweetAlert2 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.css">
@@ -29,6 +29,9 @@
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
+    
+    <!-- Script para máscara de data brasileira -->
+    <script src="{{ asset('js/date-mask.js') }}"></script>
 </head>
 <body class="d-flex flex-column h-100">
     <div id="app" class="flex-shrink-0">
@@ -240,6 +243,60 @@
                     }
                 });
             }
+        });
+
+        // Configuração de formato de data brasileiro
+        document.addEventListener('DOMContentLoaded', function() {
+            // Função para configurar campos de data
+            function configureDateInputs() {
+                const dateInputs = document.querySelectorAll('input[type="date"]');
+                
+                dateInputs.forEach(function(input) {
+                    // Força o locale brasileiro
+                    input.setAttribute('lang', 'pt-BR');
+                    
+                    // Adiciona evento para formatar a exibição
+                    input.addEventListener('focus', function() {
+                        // Quando o campo recebe foco, mantém o formato ISO para compatibilidade
+                        this.type = 'date';
+                    });
+                    
+                    input.addEventListener('blur', function() {
+                        // Quando perde o foco, pode manter como date para funcionalidade
+                        this.type = 'date';
+                    });
+                    
+                    // Adiciona placeholder para indicar formato esperado
+                    input.setAttribute('placeholder', 'dd/mm/aaaa');
+                    input.setAttribute('title', 'Formato: DD/MM/AAAA');
+                });
+            }
+            
+            // Configura campos existentes
+            configureDateInputs();
+            
+            // Observer para campos adicionados dinamicamente
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach(function(node) {
+                            if (node.nodeType === 1) { // Element node
+                                const dateInputs = node.querySelectorAll ? node.querySelectorAll('input[type="date"]') : [];
+                                dateInputs.forEach(function(input) {
+                                    input.setAttribute('lang', 'pt-BR');
+                                    input.setAttribute('placeholder', 'dd/mm/aaaa');
+                                    input.setAttribute('title', 'Formato: DD/MM/AAAA');
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
         });
     </script>
 </body>
