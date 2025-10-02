@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Services\ReportCacheService;
 
 class Revenue extends Model
 {
@@ -86,6 +87,16 @@ class Revenue extends Model
             if (!$revenue->validateCategoryHierarchy()) {
                 throw new \Exception('A hierarquia das categorias não está correta. Verifique se as categorias selecionadas seguem a estrutura: Fonte > Bloco > Grupo > Ação.');
             }
+        });
+
+        static::booted(function () {
+            static::saved(function (Revenue $revenue) {
+                app(ReportCacheService::class)->touchRevenue($revenue);
+            });
+        
+            static::deleted(function (Revenue $revenue) {
+                app(ReportCacheService::class)->touchRevenue($revenue);
+            });
         });
     }
 }

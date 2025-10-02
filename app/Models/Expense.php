@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Services\ReportCacheService;
 
 class Expense extends Model
 {
@@ -94,6 +95,16 @@ class Expense extends Model
             if (!$expense->validateCategoryHierarchy()) {
                 throw new \Exception('A hierarquia das categorias não está correta. Verifique se as categorias selecionadas seguem a estrutura: Fonte > Bloco > Grupo > Ação.');
             }
+        });
+
+        static::booted(function () {
+            static::saved(function (Expense $expense) {
+                app(ReportCacheService::class)->touchExpense($expense);
+            });
+
+            static::deleted(function (Expense $expense) {
+                app(ReportCacheService::class)->touchExpense($expense);
+            });
         });
     }
 }
