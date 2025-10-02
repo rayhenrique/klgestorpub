@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Cache;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\FinancialReport;
@@ -45,13 +46,16 @@ class ReportController extends Controller
 
             \Log::info('Dados validados', ['data' => $data]);
 
-            // Preparar dados do relatório
-            $reportData = match($data['report_type']) {
-                'revenues' => $this->prepareRevenueReport($data),
-                'expenses' => $this->prepareExpenseReport($data),
-                'balance' => $this->prepareBalanceReport($data),
-                'expense_classification' => $this->prepareExpenseClassificationReport($data),
-            };
+            // Cache para relatórios complexos (TTL 3600s)
+            $cacheKey = 'report_' . md5(serialize($request->all()));
+            $reportData = Cache::remember($cacheKey, 3600, function () use ($data) {
+                return match($data['report_type']) {
+                    'revenues' => $this->prepareRevenueReport($data),
+                    'expenses' => $this->prepareExpenseReport($data),
+                    'balance' => $this->prepareBalanceReport($data),
+                    'expense_classification' => $this->prepareExpenseClassificationReport($data),
+                };
+            });
 
             \Log::info('Dados do relatório preparados', ['items_count' => count($reportData['items'])]);
 
@@ -302,11 +306,12 @@ class ReportController extends Controller
         try {
             \Log::info('Preparando relatório de balanço', ['filters' => $filters]);
 
-            // Receitas
-            $revenueQuery = Revenue::query()
+            // Receitas (query builder otimizado)
+            $revenueQuery = DB::table('revenues')
                 ->select(
-                    DB::raw('DATE(date) as date'),
+                    DB::raw('DATE(revenues.date) as date'),
                     'revenues.amount',
+                    DB::raw("'revenue' as type"),
                     'f.name as fonte',
                     'b.name as bloco',
                     'g.name as grupo',
@@ -316,13 +321,14 @@ class ReportController extends Controller
                 ->leftJoin('categories as b', 'revenues.bloco_id', '=', 'b.id')
                 ->leftJoin('categories as g', 'revenues.grupo_id', '=', 'g.id')
                 ->leftJoin('categories as a', 'revenues.acao_id', '=', 'a.id')
-                ->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
+                ->whereBetween('revenues.date', [$filters['start_date'], $filters['end_date']]);
 
-            // Despesas
-            $expenseQuery = Expense::query()
+            // Despesas (query builder otimizado)
+            $expenseQuery = DB::table('expenses')
                 ->select(
-                    DB::raw('DATE(date) as date'),
+                    DB::raw('DATE(expenses.date) as date'),
                     'expenses.amount',
+                    DB::raw("'expense' as type"),
                     'f.name as fonte',
                     'b.name as bloco',
                     'g.name as grupo',
@@ -332,79 +338,84 @@ class ReportController extends Controller
                 ->leftJoin('categories as b', 'expenses.bloco_id', '=', 'b.id')
                 ->leftJoin('categories as g', 'expenses.grupo_id', '=', 'g.id')
                 ->leftJoin('categories as a', 'expenses.acao_id', '=', 'a.id')
-                ->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
+                ->whereBetween('expenses.date', [$filters['start_date'], $filters['end_date']]);
 
+            // Filtros adicionais
             if (!empty($filters['action_id'])) {
-                $revenueQuery->where('acao_id', $filters['action_id']);
-                $expenseQuery->where('acao_id', $filters['action_id']);
+                $revenueQuery->where('revenues.acao_id', $filters['action_id']);
+                $expenseQuery->where('expenses.acao_id', $filters['action_id']);
             } elseif (!empty($filters['group_id'])) {
-                $revenueQuery->where('grupo_id', $filters['group_id']);
-                $expenseQuery->where('grupo_id', $filters['group_id']);
+                $revenueQuery->where('revenues.grupo_id', $filters['group_id']);
+                $expenseQuery->where('expenses.grupo_id', $filters['group_id']);
             } elseif (!empty($filters['block_id'])) {
-                $revenueQuery->where('bloco_id', $filters['block_id']);
-                $expenseQuery->where('bloco_id', $filters['block_id']);
+                $revenueQuery->where('revenues.bloco_id', $filters['block_id']);
+                $expenseQuery->where('expenses.bloco_id', $filters['block_id']);
             } elseif (!empty($filters['category_id'])) {
-                $revenueQuery->where('fonte_id', $filters['category_id']);
-                $expenseQuery->where('fonte_id', $filters['category_id']);
+                $revenueQuery->where('revenues.fonte_id', $filters['category_id']);
+                $expenseQuery->where('expenses.fonte_id', $filters['category_id']);
             }
 
             if (!empty($filters['expense_classification_id'])) {
-                $expenseQuery->where('expense_classification_id', $filters['expense_classification_id']);
+                $expenseQuery->where('expenses.expense_classification_id', $filters['expense_classification_id']);
             }
 
-            $revenues = $revenueQuery->get();
-            $expenses = $expenseQuery->get();
+            $revenues = collect($revenueQuery->get());
+            $expenses = collect($expenseQuery->get());
+            $combined = $revenues->merge($expenses);
 
             $items = match($filters['group_by']) {
-                'daily' => collect([...$revenues, ...$expenses])
+                'daily' => $combined
                     ->groupBy(function($item) {
                         return Carbon::parse($item->date)->format('Y-m-d');
                     })->map(function($group) {
-                        $revenues = $group->whereInstanceOf(Revenue::class)->sum('amount');
-                        $expenses = $group->whereInstanceOf(Expense::class)->sum('amount');
+                        $revenuesTotal = $group->where('type', 'revenue')->sum('amount');
+                        $expensesTotal = $group->where('type', 'expense')->sum('amount');
+                        $first = $group->first();
                         return [
-                            'period' => Carbon::parse($group->first()->date)->format('Y-m-d'),
-                            'fonte' => $group->first()->fonte,
-                            'bloco' => $group->first()->bloco,
-                            'grupo' => $group->first()->grupo,
-                            'acao' => $group->first()->acao,
-                            'revenues' => $revenues,
-                            'expenses' => $expenses,
-                            'balance' => $revenues - $expenses
+                            'period' => Carbon::parse($first->date)->format('Y-m-d'),
+                            'fonte' => $first->fonte,
+                            'bloco' => $first->bloco,
+                            'grupo' => $first->grupo,
+                            'acao' => $first->acao,
+                            'revenues' => $revenuesTotal,
+                            'expenses' => $expensesTotal,
+                            'balance' => $revenuesTotal - $expensesTotal
                         ];
                     })->values(),
-                'monthly' => collect([...$revenues, ...$expenses])
+                'monthly' => $combined
                     ->groupBy(function($item) {
                         return Carbon::parse($item->date)->format('Y-m');
                     })->map(function($group) {
-                        $revenues = $group->whereInstanceOf(Revenue::class)->sum('amount');
-                        $expenses = $group->whereInstanceOf(Expense::class)->sum('amount');
+                        $revenuesTotal = $group->where('type', 'revenue')->sum('amount');
+                        $expensesTotal = $group->where('type', 'expense')->sum('amount');
+                        $first = $group->first();
                         return [
-                            'period' => Carbon::parse($group->first()->date)->format('Y-m'),
-                            'fonte' => $group->first()->fonte,
-                            'bloco' => $group->first()->bloco,
-                            'grupo' => $group->first()->grupo,
-                            'acao' => $group->first()->acao,
-                            'revenues' => $revenues,
-                            'expenses' => $expenses,
-                            'balance' => $revenues - $expenses
+                            'period' => Carbon::parse($first->date)->format('Y-m'),
+                            'fonte' => $first->fonte,
+                            'bloco' => $first->bloco,
+                            'grupo' => $first->grupo,
+                            'acao' => $first->acao,
+                            'revenues' => $revenuesTotal,
+                            'expenses' => $expensesTotal,
+                            'balance' => $revenuesTotal - $expensesTotal
                         ];
                     })->values(),
-                'yearly' => collect([...$revenues, ...$expenses])
+                'yearly' => $combined
                     ->groupBy(function($item) {
                         return Carbon::parse($item->date)->format('Y');
                     })->map(function($group) {
-                        $revenues = $group->whereInstanceOf(Revenue::class)->sum('amount');
-                        $expenses = $group->whereInstanceOf(Expense::class)->sum('amount');
+                        $revenuesTotal = $group->where('type', 'revenue')->sum('amount');
+                        $expensesTotal = $group->where('type', 'expense')->sum('amount');
+                        $first = $group->first();
                         return [
-                            'period' => Carbon::parse($group->first()->date)->format('Y'),
-                            'fonte' => $group->first()->fonte,
-                            'bloco' => $group->first()->bloco,
-                            'grupo' => $group->first()->grupo,
-                            'acao' => $group->first()->acao,
-                            'revenues' => $revenues,
-                            'expenses' => $expenses,
-                            'balance' => $revenues - $expenses
+                            'period' => Carbon::parse($first->date)->format('Y'),
+                            'fonte' => $first->fonte,
+                            'bloco' => $first->bloco,
+                            'grupo' => $first->grupo,
+                            'acao' => $first->acao,
+                            'revenues' => $revenuesTotal,
+                            'expenses' => $expensesTotal,
+                            'balance' => $revenuesTotal - $expensesTotal
                         ];
                     })->values(),
             };
