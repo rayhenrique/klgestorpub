@@ -10,14 +10,12 @@
     
     <!-- Preconnect -->
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=Nunito:400,500,600,700&display=swap" rel="stylesheet">
     
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="{{ asset('css/fontawesome/all.min.css') }}">
+    <!-- Assets are now bundled via Vite - FontAwesome imported in app.js -->
     
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])

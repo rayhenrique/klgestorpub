@@ -11,4 +11,16 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    build: {
+        rollupOptions: {
+            output: {
+                manualChunks: {
+                    vendor: ['jquery', 'chart.js', 'sweetalert2'],
+                    fontawesome: ['@fortawesome/fontawesome-free'],
+                    mask: ['jquery-mask-plugin']
+                }
+            }
+        },
+        chunkSizeWarningLimit: 1000
+    }
 });

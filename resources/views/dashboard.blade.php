@@ -220,7 +220,6 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 // Atualizar texto do período selecionado
 document.addEventListener('DOMContentLoaded', function() {
@@ -245,10 +244,19 @@ const monthlyData = @json($monthlyData);
 const expensesByCategory = @json($expensesByCategory);
 
 // Gráfico de Receitas vs Despesas
-const revenueExpenseChart = new Chart(
-    document.getElementById('revenueExpenseChart'),
-    {
-        type: 'line',
+document.addEventListener('DOMContentLoaded', function() {
+    const ChartLib = window.Chart;
+    if (!ChartLib) {
+        console.error('Chart.js não carregado');
+        return;
+    }
+
+    const revenueCtx = document.getElementById('revenueExpenseChart');
+    if (revenueCtx) {
+        const revenueExpenseChart = new ChartLib(
+            revenueCtx,
+            {
+                type: 'line',
         data: {
             labels: monthlyData.map(data => data.month),
             datasets: [
@@ -276,34 +284,39 @@ const revenueExpenseChart = new Chart(
         }
     }
 );
+}
 
 // Gráfico de Distribuição por Categoria
-const categoryChart = new Chart(
-    document.getElementById('categoryChart'),
-    {
-        type: 'doughnut',
-        data: {
-            labels: expensesByCategory.map(category => category.name),
-            datasets: [{
-                data: expensesByCategory.map(category => category.total),
-                backgroundColor: [
-                    '#004a7c',
-                    '#005691',
-                    '#0073a8',
-                    '#0087b3',
-                    '#009ac0'
-                ]
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'right',
+const categoryCtx = document.getElementById('categoryChart');
+if (categoryCtx) {
+    const categoryChart = new ChartLib(
+        categoryCtx,
+        {
+            type: 'doughnut',
+            data: {
+                labels: expensesByCategory.map(category => category.name),
+                datasets: [{
+                    data: expensesByCategory.map(category => category.total),
+                    backgroundColor: [
+                        '#004a7c',
+                        '#005691',
+                        '#0073a8',
+                        '#0087b3',
+                        '#009ac0'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    }
                 }
             }
         }
-    }
-);
+    );
+}
+});
 </script>
 @endpush

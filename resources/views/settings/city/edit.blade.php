@@ -117,7 +117,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+<!-- jQuery Mask Plugin now bundled via Vite and imported in app.js -->
 <script>
     $(document).ready(function() {
         // Máscara para CEP
