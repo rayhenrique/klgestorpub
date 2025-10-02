@@ -10,12 +10,41 @@ use Illuminate\Http\Request;
 
 class RevenueController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $revenues = Revenue::with(['fonte', 'bloco', 'grupo', 'acao'])
-            ->orderBy('date', 'desc')
-            ->get();
-        return view('revenues.index', compact('revenues'));
+        $query = Revenue::with(['fonte', 'bloco', 'grupo', 'acao']);
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('description', 'like', "%{$search}%")
+                  ->orWhere('observation', 'like', "%{$search}%")
+                  ->orWhereHas('fonte', function($q) use ($search) {
+                      $q->where('name', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter by date range
+        if ($request->filled('date_start')) {
+            $query->whereDate('date', '>=', $request->date_start);
+        }
+        if ($request->filled('date_end')) {
+            $query->whereDate('date', '<=', $request->date_end);
+        }
+
+        // Filter by category
+        if ($request->filled('fonte_id')) {
+            $query->where('fonte_id', $request->fonte_id);
+        }
+
+        $revenues = $query->orderBy('date', 'desc')->paginate(20);
+        
+        // Data for filters
+        $fontes = Category::where('type', 'fonte')->where('active', true)->orderBy('name')->get();
+
+        return view('revenues.index', compact('revenues', 'fontes'));
     }
 
     public function create()
@@ -32,11 +61,10 @@ class RevenueController extends Controller
 
     public function store(StoreRevenueRequest $request)
     {
-        Revenue::create($request->validated());
+        $revenue = Revenue::create($request->validated());
 
-        return redirect()
-            ->route('revenues.index')
-            ->with('success', 'Receita cadastrada com sucesso.');
+        return redirect()->route('revenues.index')
+            ->with('success', 'Receita criada com sucesso.');
     }
 
     public function edit(Revenue $revenue)

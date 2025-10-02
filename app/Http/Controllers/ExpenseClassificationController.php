@@ -13,11 +13,9 @@ class ExpenseClassificationController extends Controller
      */
     public function index()
     {
-        $classifications = ExpenseClassification::with(['expenses' => function($query) {
-                $query->select('id', 'expense_classification_id');
-            }])
+        $classifications = ExpenseClassification::withCount('expenses')
             ->orderBy('name')
-            ->get();
+            ->paginate(20);
         return view('expense-classifications.index', compact('classifications'));
     }
 

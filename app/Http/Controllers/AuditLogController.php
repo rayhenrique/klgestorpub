@@ -33,7 +33,7 @@ class AuditLogController extends Controller
             $query->whereDate('created_at', '<=', $request->date_end);
         }
 
-        $logs = $query->paginate(15);
+        $logs = $query->paginate(20);
 
         // Preparar dados para os filtros
         $modelTypes = AuditLog::distinct()->pluck('model_type');

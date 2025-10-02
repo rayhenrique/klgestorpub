@@ -4,13 +4,31 @@ namespace App\Http\Controllers;
 
 use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 
 class CategoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $fontes = Category::fontes()->with('children')->get();
+        $query = Category::fontes()->with('children');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('code', 'like', "%{$search}%")
+                  ->orWhere('description', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter by active status
+        if ($request->filled('active')) {
+            $query->where('active', $request->active === '1');
+        }
+
+        $fontes = $query->paginate(20);
         return view('categories.index', compact('fontes'));
     }
 
@@ -30,50 +48,15 @@ class CategoryController extends Controller
         return view('categories.create', compact('types', 'parents'));
     }
 
-    public function store(Request $request)
+    public function store(StoreCategoryRequest $request)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50',
-            'type' => 'required|in:fonte,bloco,grupo,acao',
-            'parent_id' => 'nullable|exists:categories,id',
-            'description' => 'nullable|string',
-            'active' => 'boolean'
-        ]);
+        $data = $request->validated();
+        $data['active'] = $request->has('active');
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        Category::create($data);
 
-        // Validar hierarquia
-        if ($request->parent_id) {
-            $parent = Category::find($request->parent_id);
-            if ($parent->getAllowedChildType() !== $request->type) {
-                return redirect()->back()
-                    ->withErrors(['type' => 'Tipo inválido para esta hierarquia'])
-                    ->withInput();
-            }
-        } elseif ($request->type !== Category::TYPE_FONTE) {
-            return redirect()->back()
-                ->withErrors(['type' => 'Apenas Fontes podem não ter pai'])
-                ->withInput();
-        }
-
-        $category = Category::create($request->all());
-
-        $typeLabel = match($category->type) {
-            'fonte' => 'Fonte',
-            'bloco' => 'Bloco',
-            'grupo' => 'Grupo',
-            'acao' => 'Ação',
-            default => 'Categoria'
-        };
-
-        return redirect()
-            ->route('categories.index')
-            ->with('success', sprintf('A %s "%s" foi criada com sucesso!', $typeLabel, $category->name));
+        return redirect()->route('categories.index')
+            ->with('success', 'Categoria criada com sucesso.');
     }
 
     public function edit(Category $category)
@@ -93,50 +76,15 @@ class CategoryController extends Controller
         return view('categories.edit', compact('category', 'types', 'parents'));
     }
 
-    public function update(Request $request, Category $category)
+    public function update(UpdateCategoryRequest $request, Category $category)
     {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50',
-            'type' => 'required|in:fonte,bloco,grupo,acao',
-            'parent_id' => 'nullable|exists:categories,id',
-            'description' => 'nullable|string',
-            'active' => 'boolean'
-        ]);
+        $data = $request->validated();
+        $data['active'] = $request->has('active');
 
-        if ($validator->fails()) {
-            return redirect()->back()
-                ->withErrors($validator)
-                ->withInput();
-        }
+        $category->update($data);
 
-        // Validar hierarquia
-        if ($request->parent_id) {
-            $parent = Category::find($request->parent_id);
-            if ($parent->getAllowedChildType() !== $request->type) {
-                return redirect()->back()
-                    ->withErrors(['type' => 'Tipo inválido para esta hierarquia'])
-                    ->withInput();
-            }
-        } elseif ($request->type !== Category::TYPE_FONTE) {
-            return redirect()->back()
-                ->withErrors(['type' => 'Apenas Fontes podem não ter pai'])
-                ->withInput();
-        }
-
-        $category->update($request->all());
-
-        $typeLabel = match($category->type) {
-            'fonte' => 'Fonte',
-            'bloco' => 'Bloco',
-            'grupo' => 'Grupo',
-            'acao' => 'Ação',
-            default => 'Categoria'
-        };
-
-        return redirect()
-            ->route('categories.index')
-            ->with('success', sprintf('A %s "%s" foi atualizada com sucesso!', $typeLabel, $category->name));
+        return redirect()->route('categories.index')
+            ->with('success', 'Categoria atualizada com sucesso.');
     }
 
     public function destroy(Category $category)

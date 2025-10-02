@@ -8,6 +8,7 @@ use App\Models\Expense;
 use App\Models\Category;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class DashboardController extends Controller
 {
@@ -31,56 +32,65 @@ class DashboardController extends Controller
     {
         $period = $request->get('period', 'month');
         
-        // Get period dates
-        $periodDates = $this->getPeriodDates($period);
+        // Cache key based on period and current date
+        $cacheKey = "dashboard_data_{$period}_" . Carbon::now()->format('Y-m-d');
         
-        // Calculate current period totals
-        $currentRevenues = Revenue::whereBetween('date', [$periodDates['current_start'], $periodDates['current_end']])->sum('amount');
-        $currentExpenses = Expense::whereBetween('date', [$periodDates['current_start'], $periodDates['current_end']])->sum('amount');
-        $currentBalance = $currentRevenues - $currentExpenses;
+        // Cache dashboard data for 1 hour
+        $dashboardData = Cache::remember($cacheKey, 3600, function () use ($period) {
+            // Get period dates
+            $periodDates = $this->getPeriodDates($period);
+            
+            // Calculate current period totals
+            $currentRevenues = Revenue::whereBetween('date', [$periodDates['current_start'], $periodDates['current_end']])->sum('amount');
+            $currentExpenses = Expense::whereBetween('date', [$periodDates['current_start'], $periodDates['current_end']])->sum('amount');
+            $currentBalance = $currentRevenues - $currentExpenses;
 
-        // Calculate previous period totals
-        $previousRevenues = Revenue::whereBetween('date', [$periodDates['previous_start'], $periodDates['previous_end']])->sum('amount');
-        $previousExpenses = Expense::whereBetween('date', [$periodDates['previous_start'], $periodDates['previous_end']])->sum('amount');
-        $previousBalance = $previousRevenues - $previousExpenses;
+            // Calculate previous period totals
+            $previousRevenues = Revenue::whereBetween('date', [$periodDates['previous_start'], $periodDates['previous_end']])->sum('amount');
+            $previousExpenses = Expense::whereBetween('date', [$periodDates['previous_start'], $periodDates['previous_end']])->sum('amount');
+            $previousBalance = $previousRevenues - $previousExpenses;
 
-        // Calculate growth percentages
-        $revenueGrowth = $this->calculateGrowthPercentage($currentRevenues, $previousRevenues);
-        $expenseGrowth = $this->calculateGrowthPercentage($currentExpenses, $previousExpenses);
-        $balanceGrowth = $this->calculateGrowthPercentage($currentBalance, $previousBalance, true);
+            // Calculate growth percentages
+            $revenueGrowth = $this->calculateGrowthPercentage($currentRevenues, $previousRevenues);
+            $expenseGrowth = $this->calculateGrowthPercentage($currentExpenses, $previousExpenses);
+            $balanceGrowth = $this->calculateGrowthPercentage($currentBalance, $previousBalance, true);
 
-        // Get total categories count
-        $totalCategories = Category::count();
+            // Get total categories count
+            $totalCategories = Category::count();
 
-        // Get chart data
-        $balanceChartData = $this->getBalanceChartData($period);
-        $expensesCategoryData = $this->getExpensesCategoryChartData($periodDates['current_start'], $periodDates['current_end']);
-        
-        // Prepare monthly data for charts
-        $monthlyData = $this->getMonthlyChartData($balanceChartData);
-        $expensesByCategory = $this->getExpensesByCategoryData($expensesCategoryData);
+            // Get chart data
+            $balanceChartData = $this->getBalanceChartData($period);
+            $expensesCategoryData = $this->getExpensesCategoryChartData($periodDates['current_start'], $periodDates['current_end']);
+            
+            // Prepare monthly data for charts
+            $monthlyData = $this->getMonthlyChartData($balanceChartData);
+            $expensesByCategory = $this->getExpensesByCategoryData($expensesCategoryData);
 
-        // Get recent transactions with eager loading
+            return [
+                'currentRevenues' => $currentRevenues,
+                'currentExpenses' => $currentExpenses,
+                'currentBalance' => $currentBalance,
+                'revenueGrowth' => $revenueGrowth,
+                'expenseGrowth' => $expenseGrowth,
+                'balanceGrowth' => $balanceGrowth,
+                'totalCategories' => $totalCategories,
+                'balanceChartData' => $balanceChartData,
+                'expensesCategoryData' => $expensesCategoryData,
+                'monthlyData' => $monthlyData,
+                'expensesByCategory' => $expensesByCategory
+            ];
+        });
+
+        // Get recent transactions (not cached as they change frequently)
         $recentTransactions = $this->getRecentTransactions();
 
-        return view('dashboard', compact(
-            'currentRevenues',
-            'currentExpenses',
-            'currentBalance',
-            'revenueGrowth',
-            'expenseGrowth',
-            'balanceGrowth',
-            'totalCategories',
-            'balanceChartData',
-            'expensesCategoryData',
-            'recentTransactions',
-            'period',
-            'monthlyData',
-            'expensesByCategory'
-        ))->with([
-            'revenueChange' => $revenueGrowth,
-            'expenseChange' => $expenseGrowth,
-            'balance' => $currentBalance,
+        return view('dashboard', array_merge($dashboardData, [
+            'recentTransactions' => $recentTransactions,
+            'period' => $period
+        ]))->with([
+            'revenueChange' => $dashboardData['revenueGrowth'],
+            'expenseChange' => $dashboardData['expenseGrowth'],
+            'balance' => $dashboardData['currentBalance'],
             'latestTransactions' => $recentTransactions
         ]);
     }
