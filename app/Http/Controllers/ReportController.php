@@ -46,9 +46,14 @@ class ReportController extends Controller
 
             \Log::info('Dados validados', ['data' => $data]);
 
-            // Cache para relatórios complexos (TTL 3600s)
-            $cacheKey = 'report_' . md5(serialize($request->all()));
-            $reportData = Cache::remember($cacheKey, 3600, function () use ($data) {
+            // Cache com chave versionada e TTL dinâmico
+            $cacheService = app(\App\Services\ReportCacheService::class);
+            $baseKey = $cacheService->buildBaseKey($data);
+            $version = $cacheService->getCompositeVersion($data);
+            $ttl = $cacheService->resolveTtl($data);
+            $cacheKey = $baseKey . ':' . $version;
+
+            $reportData = Cache::remember($cacheKey, $ttl, function () use ($data) {
                 return match($data['report_type']) {
                     'revenues' => $this->prepareRevenueReport($data),
                     'expenses' => $this->prepareExpenseReport($data),
@@ -56,6 +61,9 @@ class ReportController extends Controller
                     'expense_classification' => $this->prepareExpenseClassificationReport($data),
                 };
             });
+
+            // Registrar chave no índice para invalidação por eventos
+            $cacheService->registerCachedReport($cacheKey, $data);
 
             \Log::info('Dados do relatório preparados', ['items_count' => count($reportData['items'])]);
 
@@ -198,7 +206,7 @@ class ReportController extends Controller
             \Log::info('Preparando relatório de despesas', ['filters' => $filters]);
             
             $query = Expense::query()
-                ->with(['fonte', 'bloco', 'grupo', 'acao', 'expenseClassification'])
+                ->with(['fonte', 'bloco', 'grupo', 'acao', 'classification'])
                 ->select(
                     DB::raw('DATE(date) as date'),
                     'expenses.amount',
@@ -762,6 +770,7 @@ class ReportController extends Controller
             
             // Carregar a view com as configurações
             \Log::info('Carregando view do PDF com configurações', ['config' => $config]);
+            $data['citySettings'] = CitySetting::first() ?? new CitySetting();
             $pdf = PDF::setOptions($config)->loadView('reports.pdf', $data);
             \Log::info('View do PDF carregada com sucesso');
             
