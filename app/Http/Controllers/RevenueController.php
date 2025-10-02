@@ -20,7 +20,13 @@ class RevenueController extends Controller
 
     public function create()
     {
-        $fontes = Category::where('type', 'fonte')->orderBy('name')->get();
+        $fontes = Category::where('type', 'fonte')
+            ->with(['children' => function($query) {
+                $query->where('active', true)->orderBy('name');
+            }])
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
         return view('revenues.create', compact('fontes'));
     }
 
@@ -35,17 +41,23 @@ class RevenueController extends Controller
 
     public function edit(Revenue $revenue)
     {
-        $fontes = Category::where('type', 'fonte')->orderBy('name')->get();
+        $fontes = Category::where('type', 'fonte')
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
         $blocos = Category::where('type', 'bloco')
             ->where('parent_id', $revenue->fonte_id)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
         $grupos = Category::where('type', 'grupo')
             ->where('parent_id', $revenue->bloco_id)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
         $acoes = Category::where('type', 'acao')
             ->where('parent_id', $revenue->grupo_id)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
 
@@ -75,6 +87,7 @@ class RevenueController extends Controller
     {
         $blocos = Category::where('type', 'bloco')
             ->where('parent_id', $fonteId)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
         return response()->json($blocos);
@@ -84,6 +97,7 @@ class RevenueController extends Controller
     {
         $grupos = Category::where('type', 'grupo')
             ->where('parent_id', $blocoId)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
         return response()->json($grupos);
@@ -93,6 +107,7 @@ class RevenueController extends Controller
     {
         $acoes = Category::where('type', 'acao')
             ->where('parent_id', $grupoId)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
         return response()->json($acoes);

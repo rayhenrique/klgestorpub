@@ -85,6 +85,26 @@ class Category extends Model
         return $this->hasMany(Revenue::class, 'acao_id');
     }
 
+    // Método para verificar se tem despesas associadas em qualquer nível
+    public function hasAssociatedExpenses(): bool
+    {
+        return Expense::where('fonte_id', $this->id)
+            ->orWhere('bloco_id', $this->id)
+            ->orWhere('grupo_id', $this->id)
+            ->orWhere('acao_id', $this->id)
+            ->exists();
+    }
+
+    // Método para verificar se tem receitas associadas em qualquer nível
+    public function hasAssociatedRevenues(): bool
+    {
+        return Revenue::where('fonte_id', $this->id)
+            ->orWhere('bloco_id', $this->id)
+            ->orWhere('grupo_id', $this->id)
+            ->orWhere('acao_id', $this->id)
+            ->exists();
+    }
+
     // Método para obter o tipo de filho permitido
     public function getAllowedChildType(): ?string
     {
@@ -94,5 +114,51 @@ class Category extends Model
             self::TYPE_GRUPO => self::TYPE_ACAO,
             default => null,
         };
+    }
+
+    // Validação antes de excluir categoria
+    public function canBeDeleted(): bool
+    {
+        // Não pode excluir se tem filhos ativos
+        if ($this->children()->where('active', true)->exists()) {
+            return false;
+        }
+
+        // Não pode excluir se tem despesas ou receitas associadas em qualquer nível
+        if ($this->hasAssociatedExpenses() || $this->hasAssociatedRevenues()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // Método para obter mensagem de erro ao tentar excluir
+    public function getDeletionErrorMessage(): string
+    {
+        if ($this->children()->where('active', true)->exists()) {
+            return 'Não é possível excluir esta categoria pois ela possui subcategorias ativas.';
+        }
+
+        if ($this->hasAssociatedExpenses()) {
+            return 'Não é possível excluir esta categoria pois ela possui despesas associadas.';
+        }
+
+        if ($this->hasAssociatedRevenues()) {
+            return 'Não é possível excluir esta categoria pois ela possui receitas associadas.';
+        }
+
+        return '';
+    }
+
+    // Boot method para adicionar validações automáticas
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::deleting(function ($category) {
+            if (!$category->canBeDeleted()) {
+                throw new \Exception($category->getDeletionErrorMessage());
+            }
+        });
     }
 }

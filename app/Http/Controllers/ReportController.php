@@ -90,18 +90,15 @@ class ReportController extends Controller
             \Log::info('Preparando relatório de receitas', ['filters' => $filters]);
             
             $query = Revenue::query()
+                ->with(['fonte', 'bloco', 'grupo', 'acao'])
                 ->select(
                     DB::raw('DATE(date) as date'),
                     'revenues.amount',
-                    'f.name as fonte',
-                    'b.name as bloco',
-                    'g.name as grupo',
-                    'a.name as acao'
+                    'revenues.fonte_id',
+                    'revenues.bloco_id',
+                    'revenues.grupo_id',
+                    'revenues.acao_id'
                 )
-                ->leftJoin('categories as f', 'revenues.fonte_id', '=', 'f.id')
-                ->leftJoin('categories as b', 'revenues.bloco_id', '=', 'b.id')
-                ->leftJoin('categories as g', 'revenues.grupo_id', '=', 'g.id')
-                ->leftJoin('categories as a', 'revenues.acao_id', '=', 'a.id')
                 ->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
 
             if (!empty($filters['action_id'])) {
@@ -118,36 +115,39 @@ class ReportController extends Controller
                 'daily' => $query->get()->groupBy(function($item) {
                     return Carbon::parse($item->date)->format('Y-m-d');
                 })->map(function($group) {
+                    $first = $group->first();
                     return [
-                        'period' => Carbon::parse($group->first()->date)->format('Y-m-d'),
-                        'fonte' => $group->first()->fonte,
-                        'bloco' => $group->first()->bloco,
-                        'grupo' => $group->first()->grupo,
-                        'acao' => $group->first()->acao,
+                        'period' => Carbon::parse($first->date)->format('Y-m-d'),
+                        'fonte' => $first->fonte?->name,
+                        'bloco' => $first->bloco?->name,
+                        'grupo' => $first->grupo?->name,
+                        'acao' => $first->acao?->name,
                         'total' => $group->sum('amount')
                     ];
                 })->values(),
                 'monthly' => $query->get()->groupBy(function($item) {
                     return Carbon::parse($item->date)->format('Y-m');
                 })->map(function($group) {
+                    $first = $group->first();
                     return [
-                        'period' => Carbon::parse($group->first()->date)->format('Y-m'),
-                        'fonte' => $group->first()->fonte,
-                        'bloco' => $group->first()->bloco,
-                        'grupo' => $group->first()->grupo,
-                        'acao' => $group->first()->acao,
+                        'period' => Carbon::parse($first->date)->format('Y-m'),
+                        'fonte' => $first->fonte?->name,
+                        'bloco' => $first->bloco?->name,
+                        'grupo' => $first->grupo?->name,
+                        'acao' => $first->acao?->name,
                         'total' => $group->sum('amount')
                     ];
                 })->values(),
                 'yearly' => $query->get()->groupBy(function($item) {
                     return Carbon::parse($item->date)->format('Y');
                 })->map(function($group) {
+                    $first = $group->first();
                     return [
-                        'period' => Carbon::parse($group->first()->date)->format('Y'),
-                        'fonte' => $group->first()->fonte,
-                        'bloco' => $group->first()->bloco,
-                        'grupo' => $group->first()->grupo,
-                        'acao' => $group->first()->acao,
+                        'period' => Carbon::parse($first->date)->format('Y'),
+                        'fonte' => $first->fonte?->name,
+                        'bloco' => $first->bloco?->name,
+                        'grupo' => $first->grupo?->name,
+                        'acao' => $first->acao?->name,
                         'total' => $group->sum('amount')
                     ];
                 })->values(),
@@ -194,18 +194,16 @@ class ReportController extends Controller
             \Log::info('Preparando relatório de despesas', ['filters' => $filters]);
             
             $query = Expense::query()
+                ->with(['fonte', 'bloco', 'grupo', 'acao', 'expenseClassification'])
                 ->select(
                     DB::raw('DATE(date) as date'),
                     'expenses.amount',
-                    'f.name as fonte',
-                    'b.name as bloco',
-                    'g.name as grupo',
-                    'a.name as acao'
+                    'expenses.fonte_id',
+                    'expenses.bloco_id',
+                    'expenses.grupo_id',
+                    'expenses.acao_id',
+                    'expenses.expense_classification_id'
                 )
-                ->leftJoin('categories as f', 'expenses.fonte_id', '=', 'f.id')
-                ->leftJoin('categories as b', 'expenses.bloco_id', '=', 'b.id')
-                ->leftJoin('categories as g', 'expenses.grupo_id', '=', 'g.id')
-                ->leftJoin('categories as a', 'expenses.acao_id', '=', 'a.id')
                 ->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
 
             if (!empty($filters['action_id'])) {
@@ -226,36 +224,39 @@ class ReportController extends Controller
                 'daily' => $query->get()->groupBy(function($item) {
                     return Carbon::parse($item->date)->format('Y-m-d');
                 })->map(function($group) {
+                    $first = $group->first();
                     return [
-                        'period' => Carbon::parse($group->first()->date)->format('Y-m-d'),
-                        'fonte' => $group->first()->fonte,
-                        'bloco' => $group->first()->bloco,
-                        'grupo' => $group->first()->grupo,
-                        'acao' => $group->first()->acao,
+                        'period' => Carbon::parse($first->date)->format('Y-m-d'),
+                        'fonte' => $first->fonte?->name,
+                        'bloco' => $first->bloco?->name,
+                        'grupo' => $first->grupo?->name,
+                        'acao' => $first->acao?->name,
                         'total' => $group->sum('amount')
                     ];
                 })->values(),
                 'monthly' => $query->get()->groupBy(function($item) {
                     return Carbon::parse($item->date)->format('Y-m');
                 })->map(function($group) {
+                    $first = $group->first();
                     return [
-                        'period' => Carbon::parse($group->first()->date)->format('Y-m'),
-                        'fonte' => $group->first()->fonte,
-                        'bloco' => $group->first()->bloco,
-                        'grupo' => $group->first()->grupo,
-                        'acao' => $group->first()->acao,
+                        'period' => Carbon::parse($first->date)->format('Y-m'),
+                        'fonte' => $first->fonte?->name,
+                        'bloco' => $first->bloco?->name,
+                        'grupo' => $first->grupo?->name,
+                        'acao' => $first->acao?->name,
                         'total' => $group->sum('amount')
                     ];
                 })->values(),
                 'yearly' => $query->get()->groupBy(function($item) {
                     return Carbon::parse($item->date)->format('Y');
                 })->map(function($group) {
+                    $first = $group->first();
                     return [
-                        'period' => Carbon::parse($group->first()->date)->format('Y'),
-                        'fonte' => $group->first()->fonte,
-                        'bloco' => $group->first()->bloco,
-                        'grupo' => $group->first()->grupo,
-                        'acao' => $group->first()->acao,
+                        'period' => Carbon::parse($first->date)->format('Y'),
+                        'fonte' => $first->fonte?->name,
+                        'bloco' => $first->bloco?->name,
+                        'grupo' => $first->grupo?->name,
+                        'acao' => $first->acao?->name,
                         'total' => $group->sum('amount')
                     ];
                 })->values(),

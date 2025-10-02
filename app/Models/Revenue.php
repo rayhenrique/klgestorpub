@@ -46,4 +46,46 @@ class Revenue extends Model
     {
         return $this->belongsTo(Category::class, 'acao_id');
     }
+
+    // Validação de hierarquia das categorias
+    public function validateCategoryHierarchy(): bool
+    {
+        // Validar se o bloco pertence à fonte especificada
+        if ($this->fonte_id && $this->bloco_id) {
+            $bloco = Category::find($this->bloco_id);
+            if ($bloco && $bloco->parent_id !== $this->fonte_id) {
+                return false;
+            }
+        }
+
+        // Validar se o grupo pertence ao bloco especificado
+        if ($this->bloco_id && $this->grupo_id) {
+            $grupo = Category::find($this->grupo_id);
+            if ($grupo && $grupo->parent_id !== $this->bloco_id) {
+                return false;
+            }
+        }
+
+        // Validar se a ação pertence ao grupo especificado
+        if ($this->grupo_id && $this->acao_id) {
+            $acao = Category::find($this->acao_id);
+            if ($acao && $acao->parent_id !== $this->grupo_id) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Boot method para adicionar validações automáticas
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::saving(function ($revenue) {
+            if (!$revenue->validateCategoryHierarchy()) {
+                throw new \Exception('A hierarquia das categorias não está correta. Verifique se as categorias selecionadas seguem a estrutura: Fonte > Bloco > Grupo > Ação.');
+            }
+        });
+    }
 }

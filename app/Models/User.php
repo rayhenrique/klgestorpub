@@ -50,10 +50,6 @@ class User extends Authenticatable
 
     public function isAdmin(): bool
     {
-        \Log::info('isAdmin check', [
-            'user_role' => $this->role,
-            'is_admin' => $this->role === 'admin'
-        ]);
         return $this->role === 'admin';
     }
 

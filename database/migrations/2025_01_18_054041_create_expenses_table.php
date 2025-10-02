@@ -18,8 +18,8 @@ return new class extends Migration
             $table->date('date');
             $table->foreignId('fonte_id')->constrained('categories');
             $table->foreignId('bloco_id')->constrained('categories');
-            $table->foreignId('grupo_id')->constrained('categories');
-            $table->foreignId('acao_id')->constrained('categories');
+            $table->foreignId('grupo_id')->nullable()->constrained('categories');
+            $table->foreignId('acao_id')->nullable()->constrained('categories');
             $table->foreignId('expense_classification_id')->constrained('expense_classifications');
             $table->text('observation')->nullable();
             $table->timestamps();

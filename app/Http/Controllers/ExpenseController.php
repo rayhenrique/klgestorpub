@@ -20,9 +20,17 @@ class ExpenseController extends Controller
 
     public function create()
     {
-        $fontes = Category::where('type', 'fonte')->orderBy('name')->get();
-        $classifications = ExpenseClassification::orderBy('name')->get();
-        return view('expenses.create', compact('fontes', 'classifications'));
+        $fontes = Category::where('type', 'fonte')
+            ->with(['children' => function($query) {
+                $query->where('active', true)->orderBy('name');
+            }])
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
+        $expenseClassifications = ExpenseClassification::where('active', true)
+            ->orderBy('name')
+            ->get();
+        return view('expenses.create', compact('fontes', 'expenseClassifications'));
     }
 
     public function store(Request $request)
@@ -55,20 +63,28 @@ class ExpenseController extends Controller
 
     public function edit(Expense $expense)
     {
-        $fontes = Category::where('type', 'fonte')->orderBy('name')->get();
+        $fontes = Category::where('type', 'fonte')
+            ->where('active', true)
+            ->orderBy('name')
+            ->get();
         $blocos = Category::where('type', 'bloco')
             ->where('parent_id', $expense->fonte_id)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
         $grupos = Category::where('type', 'grupo')
             ->where('parent_id', $expense->bloco_id)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
         $acoes = Category::where('type', 'acao')
             ->where('parent_id', $expense->grupo_id)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
-        $classifications = ExpenseClassification::orderBy('name')->get();
+        $classifications = ExpenseClassification::where('active', true)
+            ->orderBy('name')
+            ->get();
 
         return view('expenses.edit', compact(
             'expense',
@@ -122,6 +138,7 @@ class ExpenseController extends Controller
     {
         $blocos = Category::where('type', 'bloco')
             ->where('parent_id', $fonteId)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
         return response()->json($blocos);
@@ -131,6 +148,7 @@ class ExpenseController extends Controller
     {
         $grupos = Category::where('type', 'grupo')
             ->where('parent_id', $blocoId)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
         return response()->json($grupos);
@@ -140,6 +158,7 @@ class ExpenseController extends Controller
     {
         $acoes = Category::where('type', 'acao')
             ->where('parent_id', $grupoId)
+            ->where('active', true)
             ->orderBy('name')
             ->get();
         return response()->json($acoes);
