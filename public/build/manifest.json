@@ -1,9 +1,73 @@
 {
+  "_fontawesome-l0sNRNKZ.js": {
+    "file": "assets/fontawesome-l0sNRNKZ.js",
+    "name": "fontawesome"
+  },
+  "_mask-B4c_p9kq.js": {
+    "file": "assets/mask-B4c_p9kq.js",
+    "name": "mask",
+    "imports": [
+      "_vendor-hWGb-EVB.js"
+    ]
+  },
+  "_vendor-hWGb-EVB.js": {
+    "file": "assets/vendor-hWGb-EVB.js",
+    "name": "vendor"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf": {
+    "file": "assets/fa-brands-400-D1LuMI3I.ttf",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.ttf"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2": {
+    "file": "assets/fa-brands-400-D_cYUPeE.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-brands-400.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.ttf": {
+    "file": "assets/fa-regular-400-DZaxPHgR.ttf",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.ttf"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2": {
+    "file": "assets/fa-regular-400-BjRzuEpd.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-regular-400.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.ttf": {
+    "file": "assets/fa-solid-900-D0aA9rwL.ttf",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.ttf"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2": {
+    "file": "assets/fa-solid-900-CTAAxXor.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-solid-900.woff2"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.ttf": {
+    "file": "assets/fa-v4compatibility-CCth-dXg.ttf",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.ttf"
+  },
+  "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2": {
+    "file": "assets/fa-v4compatibility-C9RhG_FT.woff2",
+    "src": "node_modules/@fortawesome/fontawesome-free/webfonts/fa-v4compatibility.woff2"
+  },
   "resources/js/app.js": {
-    "file": "assets/app-CyGjzoKw.js",
+    "file": "assets/app-CiPXPfGu.js",
     "name": "app",
     "src": "resources/js/app.js",
-    "isEntry": true
+    "isEntry": true,
+    "imports": [
+      "_vendor-hWGb-EVB.js",
+      "_mask-B4c_p9kq.js"
+    ],
+    "css": [
+      "assets/app-CjfE1Ck1.css"
+    ],
+    "assets": [
+      "assets/fa-brands-400-D_cYUPeE.woff2",
+      "assets/fa-brands-400-D1LuMI3I.ttf",
+      "assets/fa-regular-400-BjRzuEpd.woff2",
+      "assets/fa-regular-400-DZaxPHgR.ttf",
+      "assets/fa-solid-900-CTAAxXor.woff2",
+      "assets/fa-solid-900-D0aA9rwL.ttf",
+      "assets/fa-v4compatibility-C9RhG_FT.woff2",
+      "assets/fa-v4compatibility-CCth-dXg.ttf"
+    ]
   },
   "resources/sass/app.scss": {
     "file": "assets/app-BNYLBbB9.css",

@@ -28,15 +28,20 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Add smooth scrolling for anchor links
+    // Add smooth scrolling for anchor links (robust against href="#")
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
+            const href = (this.getAttribute('href') || '').trim();
+            // Ignore empty or just '#'
+            if (!href || href === '#') {
+                return; // let default or do nothing
+            }
+            // Resolve target by id to avoid invalid querySelector
+            const id = href.startsWith('#') ? href.slice(1) : href;
+            const target = document.getElementById(id);
             if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth'
-                });
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth' });
             }
         });
     });

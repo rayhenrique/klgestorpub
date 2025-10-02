@@ -1,3 +1,5 @@
+@use 'variables' as *;
+
 // Fonts
 @import url('https://fonts.bunny.net/css?family=Nunito');
 
@@ -5,7 +7,6 @@
 // Os arquivos SCSS serão importados via CSS
 
 // Variables
-@import 'variables';
 
 // Bootstrap
 @import 'bootstrap/scss/bootstrap';
