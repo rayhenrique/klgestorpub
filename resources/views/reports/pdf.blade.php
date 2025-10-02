@@ -118,7 +118,7 @@
 </head>
 <body>
     @php
-        $citySettings = App\Models\CitySetting::first();
+        $citySettings = isset($citySettings) && $citySettings ? $citySettings : (App\Models\CitySetting::first() ?? new \App\Models\CitySetting());
     @endphp
 
     <div class="header">
@@ -197,6 +197,13 @@
                     <th class="text-end">Receitas</th>
                     <th class="text-end">Despesas</th>
                     <th class="text-end">Saldo</th>
+                @elseif($filters['report_type'] === 'expense_classification')
+                    <th>Classificação</th>
+                    <th>Fonte</th>
+                    <th>Bloco</th>
+                    <th>Grupo</th>
+                    <th>Ação</th>
+                    <th class="text-end">Total</th>
                 @else
                     <th>Fonte</th>
                     <th>Bloco</th>
@@ -228,6 +235,13 @@
                         <td class="text-end {{ $item['balance'] >= 0 ? 'text-success' : 'text-danger' }}">
                             R$ {{ number_format(abs($item['balance']), 2, ',', '.') }}
                         </td>
+                    @elseif($filters['report_type'] === 'expense_classification')
+                        <td>{{ $item['classification'] ?? '-' }}</td>
+                        <td>{{ $item['fonte'] ?? '-' }}</td>
+                        <td>{{ $item['bloco'] ?? '-' }}</td>
+                        <td>{{ $item['grupo'] ?? '-' }}</td>
+                        <td>{{ $item['acao'] ?? '-' }}</td>
+                        <td class="text-end">R$ {{ number_format($item['total'], 2, ',', '.') }}</td>
                     @else
                         <td>{{ $item['fonte'] ?? '-' }}</td>
                         <td>{{ $item['bloco'] ?? '-' }}</td>
@@ -240,8 +254,8 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="{{ $filters['report_type'] === 'balance' ? 8 : 6 }}" style="text-align: center">
-                        Nenhum registro encontrado
+                    <td colspan="{{ $filters['report_type'] === 'balance' ? 8 : ($filters['report_type'] === 'expense_classification' ? 7 : 6) }}" style="text-align: center">
+                        Nenhum registro encontrado para os filtros selecionados.
                     </td>
                 </tr>
             @endforelse
@@ -255,10 +269,23 @@
                     <td>-</td>
                     <td>-</td>
                     <td>-</td>
-                    <td class="text-end text-success"><strong>R$ {{ number_format($items->sum('revenues'), 2, ',', '.') }}</strong></td>
-                    <td class="text-end text-danger"><strong>R$ {{ number_format($items->sum('expenses'), 2, ',', '.') }}</strong></td>
+                    <td class="text-end text-success">
+                        <strong>R$ {{ number_format($items->sum('revenues'), 2, ',', '.') }}</strong>
+                    </td>
+                    <td class="text-end text-danger">
+                        <strong>R$ {{ number_format($items->sum('expenses'), 2, ',', '.') }}</strong>
+                    </td>
                     <td class="text-end {{ $items->sum('balance') >= 0 ? 'text-success' : 'text-danger' }}">
                         <strong>R$ {{ number_format(abs($items->sum('balance')), 2, ',', '.') }}</strong>
+                    </td>
+                @elseif($filters['report_type'] === 'expense_classification')
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td class="text-end">
+                        <strong>R$ {{ number_format($items->sum('total'), 2, ',', '.') }}</strong>
                     </td>
                 @else
                     <td>-</td>
