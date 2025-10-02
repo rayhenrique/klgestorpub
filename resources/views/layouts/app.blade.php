@@ -29,9 +29,6 @@
 
     <!-- Scripts -->
     @vite(['resources/sass/app.scss', 'resources/js/app.js'])
-    
-    <!-- Script para máscara de data brasileira -->
-    <script src="{{ asset('js/date-mask.js') }}"></script>
 </head>
 <body class="d-flex flex-column h-100">
     <div id="app" class="flex-shrink-0">
@@ -245,30 +242,18 @@
             }
         });
 
-        // Configuração de formato de data brasileiro
+        // Configuração de campos de data HTML5
         document.addEventListener('DOMContentLoaded', function() {
             // Função para configurar campos de data
             function configureDateInputs() {
                 const dateInputs = document.querySelectorAll('input[type="date"]');
                 
                 dateInputs.forEach(function(input) {
-                    // Força o locale brasileiro
+                    // Força o locale brasileiro para melhor experiência do usuário
                     input.setAttribute('lang', 'pt-BR');
                     
-                    // Adiciona evento para formatar a exibição
-                    input.addEventListener('focus', function() {
-                        // Quando o campo recebe foco, mantém o formato ISO para compatibilidade
-                        this.type = 'date';
-                    });
-                    
-                    input.addEventListener('blur', function() {
-                        // Quando perde o foco, pode manter como date para funcionalidade
-                        this.type = 'date';
-                    });
-                    
-                    // Adiciona placeholder para indicar formato esperado
-                    input.setAttribute('placeholder', 'dd/mm/aaaa');
-                    input.setAttribute('title', 'Formato: DD/MM/AAAA');
+                    // Define título explicativo
+                    input.setAttribute('title', 'Selecione uma data');
                 });
             }
             
@@ -284,8 +269,7 @@
                                 const dateInputs = node.querySelectorAll ? node.querySelectorAll('input[type="date"]') : [];
                                 dateInputs.forEach(function(input) {
                                     input.setAttribute('lang', 'pt-BR');
-                                    input.setAttribute('placeholder', 'dd/mm/aaaa');
-                                    input.setAttribute('title', 'Formato: DD/MM/AAAA');
+                                    input.setAttribute('title', 'Selecione uma data');
                                 });
                             }
                         });
