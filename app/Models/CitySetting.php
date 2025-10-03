@@ -17,4 +17,4 @@ class CitySetting extends Model
         'email',
         'mayor_name',
     ];
-} 
+}

@@ -2,15 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Services\ReportCacheService;
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Services\ReportCacheService;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Expense extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $fillable = [
         'description',
@@ -21,12 +21,12 @@ class Expense extends Model
         'grupo_id',
         'acao_id',
         'expense_classification_id',
-        'observation'
+        'observation',
     ];
 
     protected $casts = [
         'date' => 'date',
-        'amount' => 'decimal:2'
+        'amount' => 'decimal:2',
     ];
 
     // Relacionamentos com as categorias
@@ -92,7 +92,7 @@ class Expense extends Model
         parent::boot();
 
         static::saving(function ($expense) {
-            if (!$expense->validateCategoryHierarchy()) {
+            if (! $expense->validateCategoryHierarchy()) {
                 throw new \Exception('A hierarquia das categorias não está correta. Verifique se as categorias selecionadas seguem a estrutura: Fonte > Bloco > Grupo > Ação.');
             }
         });

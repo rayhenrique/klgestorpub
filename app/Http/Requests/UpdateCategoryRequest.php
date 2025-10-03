@@ -23,11 +23,11 @@ class UpdateCategoryRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50|unique:categories,code,' . $this->category->id,
+            'code' => 'nullable|string|max:50|unique:categories,code,'.$this->category->id,
             'type' => 'required|in:fonte,bloco,grupo,acao',
             'parent_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string|max:1000',
-            'active' => 'boolean'
+            'active' => 'boolean',
         ];
     }
 

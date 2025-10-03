@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\FinancialReport;
 use App\Models\Category;
 use App\Models\CitySetting;
+use App\Models\Expense;
 use App\Models\ExpenseClassification;
 use App\Models\Revenue;
-use App\Models\Expense;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
-use Illuminate\Support\Facades\Cache;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\FinancialReport;
 
 class ReportController extends Controller
 {
@@ -22,6 +22,7 @@ class ReportController extends Controller
     {
         $categories = Category::fontes()->with('children')->get();
         $expenseClassifications = ExpenseClassification::all();
+
         return view('reports.index', compact('categories', 'expenseClassifications'));
     }
 
@@ -40,8 +41,8 @@ class ReportController extends Controller
                 'start_date' => 'required|date',
                 'end_date' => 'required|date|after_or_equal:start_date',
                 'group_by' => 'required|in:daily,monthly,yearly',
-                'format' => 'required|in:view,pdf',  
-                'include_charts' => 'nullable|boolean'
+                'format' => 'required|in:view,pdf',
+                'include_charts' => 'nullable|boolean',
             ]);
 
             \Log::info('Dados validados', ['data' => $data]);
@@ -51,10 +52,10 @@ class ReportController extends Controller
             $baseKey = $cacheService->buildBaseKey($data);
             $version = $cacheService->getCompositeVersion($data);
             $ttl = $cacheService->resolveTtl($data);
-            $cacheKey = $baseKey . ':' . $version;
+            $cacheKey = $baseKey.':'.$version;
 
             $reportData = Cache::remember($cacheKey, $ttl, function () use ($data) {
-                return match($data['report_type']) {
+                return match ($data['report_type']) {
                     'revenues' => $this->prepareRevenueReport($data),
                     'expenses' => $this->prepareExpenseReport($data),
                     'balance' => $this->prepareBalanceReport($data),
@@ -74,7 +75,7 @@ class ReportController extends Controller
 
             \Log::info('Dados do relatório montados', [
                 'metadata' => $reportData['metadata'],
-                'items_count' => count($reportData['items'])
+                'items_count' => count($reportData['items']),
             ]);
 
             // Gerar relatório no formato solicitado
@@ -84,14 +85,14 @@ class ReportController extends Controller
                 case 'excel':
                     return response()->json([
                         'message' => 'Exportação para Excel estará disponível na próxima versão.',
-                        'status' => 'info'
+                        'status' => 'info',
                     ]);
                 default:
                     return view('reports.show', $reportData);
             }
         } catch (\Exception $e) {
-            \Log::error('Erro na geração do relatório: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Erro na geração do relatório: '.$e->getMessage());
+            \Log::error('Stack trace: '.$e->getTraceAsString());
             throw $e;
         }
     }
@@ -100,7 +101,7 @@ class ReportController extends Controller
     {
         try {
             \Log::info('Preparando relatório de receitas', ['filters' => $filters]);
-            
+
             $query = Revenue::query()
                 ->with(['fonte', 'bloco', 'grupo', 'acao'])
                 ->select(
@@ -113,66 +114,69 @@ class ReportController extends Controller
                 )
                 ->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
 
-            if (!empty($filters['action_id'])) {
+            if (! empty($filters['action_id'])) {
                 $query->where('acao_id', $filters['action_id']);
-            } elseif (!empty($filters['group_id'])) {
+            } elseif (! empty($filters['group_id'])) {
                 $query->where('grupo_id', $filters['group_id']);
-            } elseif (!empty($filters['block_id'])) {
+            } elseif (! empty($filters['block_id'])) {
                 $query->where('bloco_id', $filters['block_id']);
-            } elseif (!empty($filters['category_id'])) {
+            } elseif (! empty($filters['category_id'])) {
                 $query->where('fonte_id', $filters['category_id']);
             }
 
-            $items = match($filters['group_by']) {
-                'daily' => $query->get()->groupBy(function($item) {
+            $items = match ($filters['group_by']) {
+                'daily' => $query->get()->groupBy(function ($item) {
                     return Carbon::parse($item->date)->format('Y-m-d');
-                })->map(function($group) {
+                })->map(function ($group) {
                     $first = $group->first();
+
                     return [
                         'period' => Carbon::parse($first->date)->format('Y-m-d'),
                         'fonte' => $first->fonte?->name,
                         'bloco' => $first->bloco?->name,
                         'grupo' => $first->grupo?->name,
                         'acao' => $first->acao?->name,
-                        'total' => $group->sum('amount')
+                        'total' => $group->sum('amount'),
                     ];
                 })->values(),
-                'monthly' => $query->get()->groupBy(function($item) {
+                'monthly' => $query->get()->groupBy(function ($item) {
                     return Carbon::parse($item->date)->format('Y-m');
-                })->map(function($group) {
+                })->map(function ($group) {
                     $first = $group->first();
+
                     return [
                         'period' => Carbon::parse($first->date)->format('Y-m'),
                         'fonte' => $first->fonte?->name,
                         'bloco' => $first->bloco?->name,
                         'grupo' => $first->grupo?->name,
                         'acao' => $first->acao?->name,
-                        'total' => $group->sum('amount')
+                        'total' => $group->sum('amount'),
                     ];
                 })->values(),
-                'yearly' => $query->get()->groupBy(function($item) {
+                'yearly' => $query->get()->groupBy(function ($item) {
                     return Carbon::parse($item->date)->format('Y');
-                })->map(function($group) {
+                })->map(function ($group) {
                     $first = $group->first();
+
                     return [
                         'period' => Carbon::parse($first->date)->format('Y'),
                         'fonte' => $first->fonte?->name,
                         'bloco' => $first->bloco?->name,
                         'grupo' => $first->grupo?->name,
                         'acao' => $first->acao?->name,
-                        'total' => $group->sum('amount')
+                        'total' => $group->sum('amount'),
                     ];
                 })->values(),
             };
 
             \Log::info('Dados do relatório de receitas', [
                 'count' => $items->count(),
-                'items' => $items->toArray()
+                'items' => $items->toArray(),
             ]);
 
             // Preparar dados para o gráfico se solicitado
             $charts = null;
-            if (!empty($filters['include_charts'])) {
+            if (! empty($filters['include_charts'])) {
                 $charts = [
                     'labels' => $items->pluck('period')->toArray(),
                     'datasets' => [
@@ -181,9 +185,9 @@ class ReportController extends Controller
                             'data' => $items->pluck('total')->toArray(),
                             'borderColor' => '#198754',
                             'backgroundColor' => 'rgba(40, 167, 69, 0.2)',
-                            'fill' => true
-                        ]
-                    ]
+                            'fill' => true,
+                        ],
+                    ],
                 ];
             }
 
@@ -191,11 +195,11 @@ class ReportController extends Controller
                 'items' => $items,
                 'filters' => $filters,
                 'metadata' => $this->getMetadata($filters, 'Relatório de Receitas'),
-                'charts' => $charts
+                'charts' => $charts,
             ];
         } catch (\Exception $e) {
-            \Log::error('Erro ao preparar relatório de receitas: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Erro ao preparar relatório de receitas: '.$e->getMessage());
+            \Log::error('Stack trace: '.$e->getTraceAsString());
             throw $e;
         }
     }
@@ -204,7 +208,7 @@ class ReportController extends Controller
     {
         try {
             \Log::info('Preparando relatório de despesas', ['filters' => $filters]);
-            
+
             $query = Expense::query()
                 ->with(['fonte', 'bloco', 'grupo', 'acao', 'classification'])
                 ->select(
@@ -218,70 +222,73 @@ class ReportController extends Controller
                 )
                 ->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
 
-            if (!empty($filters['action_id'])) {
+            if (! empty($filters['action_id'])) {
                 $query->where('acao_id', $filters['action_id']);
-            } elseif (!empty($filters['group_id'])) {
+            } elseif (! empty($filters['group_id'])) {
                 $query->where('grupo_id', $filters['group_id']);
-            } elseif (!empty($filters['block_id'])) {
+            } elseif (! empty($filters['block_id'])) {
                 $query->where('bloco_id', $filters['block_id']);
-            } elseif (!empty($filters['category_id'])) {
+            } elseif (! empty($filters['category_id'])) {
                 $query->where('fonte_id', $filters['category_id']);
             }
 
-            if (!empty($filters['expense_classification_id'])) {
+            if (! empty($filters['expense_classification_id'])) {
                 $query->where('expense_classification_id', $filters['expense_classification_id']);
             }
 
-            $items = match($filters['group_by']) {
-                'daily' => $query->get()->groupBy(function($item) {
+            $items = match ($filters['group_by']) {
+                'daily' => $query->get()->groupBy(function ($item) {
                     return Carbon::parse($item->date)->format('Y-m-d');
-                })->map(function($group) {
+                })->map(function ($group) {
                     $first = $group->first();
+
                     return [
                         'period' => Carbon::parse($first->date)->format('Y-m-d'),
                         'fonte' => $first->fonte?->name,
                         'bloco' => $first->bloco?->name,
                         'grupo' => $first->grupo?->name,
                         'acao' => $first->acao?->name,
-                        'total' => $group->sum('amount')
+                        'total' => $group->sum('amount'),
                     ];
                 })->values(),
-                'monthly' => $query->get()->groupBy(function($item) {
+                'monthly' => $query->get()->groupBy(function ($item) {
                     return Carbon::parse($item->date)->format('Y-m');
-                })->map(function($group) {
+                })->map(function ($group) {
                     $first = $group->first();
+
                     return [
                         'period' => Carbon::parse($first->date)->format('Y-m'),
                         'fonte' => $first->fonte?->name,
                         'bloco' => $first->bloco?->name,
                         'grupo' => $first->grupo?->name,
                         'acao' => $first->acao?->name,
-                        'total' => $group->sum('amount')
+                        'total' => $group->sum('amount'),
                     ];
                 })->values(),
-                'yearly' => $query->get()->groupBy(function($item) {
+                'yearly' => $query->get()->groupBy(function ($item) {
                     return Carbon::parse($item->date)->format('Y');
-                })->map(function($group) {
+                })->map(function ($group) {
                     $first = $group->first();
+
                     return [
                         'period' => Carbon::parse($first->date)->format('Y'),
                         'fonte' => $first->fonte?->name,
                         'bloco' => $first->bloco?->name,
                         'grupo' => $first->grupo?->name,
                         'acao' => $first->acao?->name,
-                        'total' => $group->sum('amount')
+                        'total' => $group->sum('amount'),
                     ];
                 })->values(),
             };
 
             \Log::info('Dados do relatório de despesas', [
                 'count' => $items->count(),
-                'items' => $items->toArray()
+                'items' => $items->toArray(),
             ]);
 
             // Preparar dados para o gráfico se solicitado
             $charts = null;
-            if (!empty($filters['include_charts'])) {
+            if (! empty($filters['include_charts'])) {
                 $charts = [
                     'labels' => $items->pluck('period')->toArray(),
                     'datasets' => [
@@ -290,9 +297,9 @@ class ReportController extends Controller
                             'data' => $items->pluck('total')->toArray(),
                             'borderColor' => '#dc3545',
                             'backgroundColor' => 'rgba(220, 53, 69, 0.2)',
-                            'fill' => true
-                        ]
-                    ]
+                            'fill' => true,
+                        ],
+                    ],
                 ];
             }
 
@@ -300,11 +307,11 @@ class ReportController extends Controller
                 'items' => $items,
                 'filters' => $filters,
                 'metadata' => $this->getMetadata($filters, 'Relatório de Despesas'),
-                'charts' => $charts
+                'charts' => $charts,
             ];
         } catch (\Exception $e) {
-            \Log::error('Erro ao preparar relatório de despesas: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Erro ao preparar relatório de despesas: '.$e->getMessage());
+            \Log::error('Stack trace: '.$e->getTraceAsString());
             throw $e;
         }
     }
@@ -349,21 +356,21 @@ class ReportController extends Controller
                 ->whereBetween('expenses.date', [$filters['start_date'], $filters['end_date']]);
 
             // Filtros adicionais
-            if (!empty($filters['action_id'])) {
+            if (! empty($filters['action_id'])) {
                 $revenueQuery->where('revenues.acao_id', $filters['action_id']);
                 $expenseQuery->where('expenses.acao_id', $filters['action_id']);
-            } elseif (!empty($filters['group_id'])) {
+            } elseif (! empty($filters['group_id'])) {
                 $revenueQuery->where('revenues.grupo_id', $filters['group_id']);
                 $expenseQuery->where('expenses.grupo_id', $filters['group_id']);
-            } elseif (!empty($filters['block_id'])) {
+            } elseif (! empty($filters['block_id'])) {
                 $revenueQuery->where('revenues.bloco_id', $filters['block_id']);
                 $expenseQuery->where('expenses.bloco_id', $filters['block_id']);
-            } elseif (!empty($filters['category_id'])) {
+            } elseif (! empty($filters['category_id'])) {
                 $revenueQuery->where('revenues.fonte_id', $filters['category_id']);
                 $expenseQuery->where('expenses.fonte_id', $filters['category_id']);
             }
 
-            if (!empty($filters['expense_classification_id'])) {
+            if (! empty($filters['expense_classification_id'])) {
                 $expenseQuery->where('expenses.expense_classification_id', $filters['expense_classification_id']);
             }
 
@@ -371,14 +378,15 @@ class ReportController extends Controller
             $expenses = collect($expenseQuery->get());
             $combined = $revenues->merge($expenses);
 
-            $items = match($filters['group_by']) {
+            $items = match ($filters['group_by']) {
                 'daily' => $combined
-                    ->groupBy(function($item) {
+                    ->groupBy(function ($item) {
                         return Carbon::parse($item->date)->format('Y-m-d');
-                    })->map(function($group) {
+                    })->map(function ($group) {
                         $revenuesTotal = $group->where('type', 'revenue')->sum('amount');
                         $expensesTotal = $group->where('type', 'expense')->sum('amount');
                         $first = $group->first();
+
                         return [
                             'period' => Carbon::parse($first->date)->format('Y-m-d'),
                             'fonte' => $first->fonte,
@@ -387,16 +395,17 @@ class ReportController extends Controller
                             'acao' => $first->acao,
                             'revenues' => $revenuesTotal,
                             'expenses' => $expensesTotal,
-                            'balance' => $revenuesTotal - $expensesTotal
+                            'balance' => $revenuesTotal - $expensesTotal,
                         ];
                     })->values(),
                 'monthly' => $combined
-                    ->groupBy(function($item) {
+                    ->groupBy(function ($item) {
                         return Carbon::parse($item->date)->format('Y-m');
-                    })->map(function($group) {
+                    })->map(function ($group) {
                         $revenuesTotal = $group->where('type', 'revenue')->sum('amount');
                         $expensesTotal = $group->where('type', 'expense')->sum('amount');
                         $first = $group->first();
+
                         return [
                             'period' => Carbon::parse($first->date)->format('Y-m'),
                             'fonte' => $first->fonte,
@@ -405,16 +414,17 @@ class ReportController extends Controller
                             'acao' => $first->acao,
                             'revenues' => $revenuesTotal,
                             'expenses' => $expensesTotal,
-                            'balance' => $revenuesTotal - $expensesTotal
+                            'balance' => $revenuesTotal - $expensesTotal,
                         ];
                     })->values(),
                 'yearly' => $combined
-                    ->groupBy(function($item) {
+                    ->groupBy(function ($item) {
                         return Carbon::parse($item->date)->format('Y');
-                    })->map(function($group) {
+                    })->map(function ($group) {
                         $revenuesTotal = $group->where('type', 'revenue')->sum('amount');
                         $expensesTotal = $group->where('type', 'expense')->sum('amount');
                         $first = $group->first();
+
                         return [
                             'period' => Carbon::parse($first->date)->format('Y'),
                             'fonte' => $first->fonte,
@@ -423,19 +433,19 @@ class ReportController extends Controller
                             'acao' => $first->acao,
                             'revenues' => $revenuesTotal,
                             'expenses' => $expensesTotal,
-                            'balance' => $revenuesTotal - $expensesTotal
+                            'balance' => $revenuesTotal - $expensesTotal,
                         ];
                     })->values(),
             };
 
             \Log::info('Dados do relatório de balanço', [
                 'count' => $items->count(),
-                'items' => $items->toArray()
+                'items' => $items->toArray(),
             ]);
 
             // Preparar dados para o gráfico se solicitado
             $charts = null;
-            if (!empty($filters['include_charts'])) {
+            if (! empty($filters['include_charts'])) {
                 $charts = [
                     'labels' => $items->pluck('period')->toArray(),
                     'datasets' => [
@@ -444,27 +454,27 @@ class ReportController extends Controller
                             'data' => $items->pluck('revenues')->toArray(),
                             'borderColor' => '#198754',
                             'backgroundColor' => '#19875422',
-                            'type' => 'line'
+                            'type' => 'line',
                         ],
                         [
                             'label' => 'Despesas',
                             'data' => $items->pluck('expenses')->toArray(),
                             'borderColor' => '#dc3545',
                             'backgroundColor' => '#dc354522',
-                            'type' => 'line'
+                            'type' => 'line',
                         ],
                         [
                             'label' => 'Saldo',
                             'data' => $items->pluck('balance')->toArray(),
-                            'backgroundColor' => function($context) {
+                            'backgroundColor' => function ($context) {
                                 return $context['raw'] >= 0 ? '#0d6efd44' : '#dc354544';
                             },
-                            'borderColor' => function($context) {
+                            'borderColor' => function ($context) {
                                 return $context['raw'] >= 0 ? '#0d6efd' : '#dc3545';
                             },
-                            'type' => 'bar'
-                        ]
-                    ]
+                            'type' => 'bar',
+                        ],
+                    ],
                 ];
             }
 
@@ -472,11 +482,11 @@ class ReportController extends Controller
                 'items' => $items,
                 'filters' => $filters,
                 'metadata' => $this->getMetadata($filters, 'Balanço Financeiro'),
-                'charts' => $charts
+                'charts' => $charts,
             ];
         } catch (\Exception $e) {
-            \Log::error('Erro ao preparar relatório de balanço: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Erro ao preparar relatório de balanço: '.$e->getMessage());
+            \Log::error('Stack trace: '.$e->getTraceAsString());
             throw $e;
         }
     }
@@ -490,56 +500,56 @@ class ReportController extends Controller
                 ->whereBetween('date', [$filters['start_date'], $filters['end_date']]);
 
             // Aplicar filtros
-            if (!empty($filters['action_id'])) {
+            if (! empty($filters['action_id'])) {
                 $query->where('acao_id', $filters['action_id']);
             }
-            if (!empty($filters['group_id'])) {
+            if (! empty($filters['group_id'])) {
                 $query->where('grupo_id', $filters['group_id']);
             }
-            if (!empty($filters['block_id'])) {
+            if (! empty($filters['block_id'])) {
                 $query->where('bloco_id', $filters['block_id']);
             }
-            if (!empty($filters['category_id'])) {
+            if (! empty($filters['category_id'])) {
                 $query->where('fonte_id', $filters['category_id']);
             }
-            if (!empty($filters['expense_classification_id'])) {
+            if (! empty($filters['expense_classification_id'])) {
                 $query->where('expense_classification_id', $filters['expense_classification_id']);
             }
 
             // Adiciona joins para trazer os nomes das categorias
             $query->join('expense_classifications', 'expenses.expense_classification_id', '=', 'expense_classifications.id')
-                  ->join('categories as fonte', 'expenses.fonte_id', '=', 'fonte.id')
-                  ->join('categories as bloco', 'expenses.bloco_id', '=', 'bloco.id')
-                  ->join('categories as grupo', 'expenses.grupo_id', '=', 'grupo.id')
-                  ->join('categories as acao', 'expenses.acao_id', '=', 'acao.id');
+                ->join('categories as fonte', 'expenses.fonte_id', '=', 'fonte.id')
+                ->join('categories as bloco', 'expenses.bloco_id', '=', 'bloco.id')
+                ->join('categories as grupo', 'expenses.grupo_id', '=', 'grupo.id')
+                ->join('categories as acao', 'expenses.acao_id', '=', 'acao.id');
 
-            $items = match($filters['group_by']) {
+            $items = match ($filters['group_by']) {
                 'daily' => $query->select(
-                        DB::raw("DATE_FORMAT(expenses.date, '%Y-%m-%d') as period"),
-                        'expenses.description',
-                        'expenses.amount as total',
-                        'expense_classifications.name as classification',
-                        'fonte.name as fonte',
-                        'bloco.name as bloco',
-                        'grupo.name as grupo',
-                        'acao.name as acao'
-                    )
+                    DB::raw("DATE_FORMAT(expenses.date, '%Y-%m-%d') as period"),
+                    'expenses.description',
+                    'expenses.amount as total',
+                    'expense_classifications.name as classification',
+                    'fonte.name as fonte',
+                    'bloco.name as bloco',
+                    'grupo.name as grupo',
+                    'acao.name as acao'
+                )
                     ->orderBy('expenses.date')
                     ->get(),
                 'monthly' => $query->select(
-                        DB::raw("DATE_FORMAT(expenses.date, '%Y-%m') as period"),
-                        'expense_classifications.name as classification',
-                        DB::raw('SUM(expenses.amount) as total')
-                    )
+                    DB::raw("DATE_FORMAT(expenses.date, '%Y-%m') as period"),
+                    'expense_classifications.name as classification',
+                    DB::raw('SUM(expenses.amount) as total')
+                )
                     ->groupBy('expense_classifications.id', 'expense_classifications.name', DB::raw("DATE_FORMAT(expenses.date, '%Y-%m')"))
                     ->orderBy('period')
                     ->orderBy('classification')
                     ->get(),
                 'yearly' => $query->select(
-                        DB::raw("DATE_FORMAT(expenses.date, '%Y') as period"),
-                        'expense_classifications.name as classification',
-                        DB::raw('SUM(expenses.amount) as total')
-                    )
+                    DB::raw("DATE_FORMAT(expenses.date, '%Y') as period"),
+                    'expense_classifications.name as classification',
+                    DB::raw('SUM(expenses.amount) as total')
+                )
                     ->groupBy('expense_classifications.id', 'expense_classifications.name', DB::raw("DATE_FORMAT(expenses.date, '%Y')"))
                     ->orderBy('period')
                     ->orderBy('classification')
@@ -548,15 +558,15 @@ class ReportController extends Controller
 
             \Log::info('Dados do relatório de classificação de despesas', [
                 'count' => $items->count(),
-                'items' => $items->toArray()
+                'items' => $items->toArray(),
             ]);
 
             // Preparar dados para o gráfico se solicitado
             $charts = null;
-            if (!empty($filters['include_charts'])) {
+            if (! empty($filters['include_charts'])) {
                 // Agrupar por classificação
                 $chartData = $items->groupBy('classification')
-                    ->map(function($group) {
+                    ->map(function ($group) {
                         return [
                             'label' => $group->first()->classification,
                             'data' => $group->pluck('total')->toArray(),
@@ -573,15 +583,15 @@ class ReportController extends Controller
 
                 $charts = [
                     'labels' => $items->pluck('period')->unique()->values()->toArray(),
-                    'datasets' => $chartData->map(function($dataset, $index) use ($colors) {
+                    'datasets' => $chartData->map(function ($dataset, $index) use ($colors) {
                         return [
                             'label' => $dataset['label'],
                             'data' => $dataset['data'],
                             'borderColor' => $colors[$index],
                             'backgroundColor' => str_replace(')', ', 0.2)', str_replace('hsl', 'hsla', $colors[$index])),
-                            'fill' => true
+                            'fill' => true,
                         ];
-                    })->toArray()
+                    })->toArray(),
                 ];
             }
 
@@ -589,34 +599,32 @@ class ReportController extends Controller
                 'items' => $items,
                 'filters' => $filters,
                 'metadata' => $this->getMetadata($filters, 'Relatório por Classificação de Despesas'),
-                'charts' => $charts
+                'charts' => $charts,
             ];
         } catch (\Exception $e) {
-            \Log::error('Erro ao preparar relatório de classificação de despesas: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Erro ao preparar relatório de classificação de despesas: '.$e->getMessage());
+            \Log::error('Stack trace: '.$e->getTraceAsString());
             throw $e;
         }
     }
 
-
-
     private function applyFilters($query, $filters)
     {
-        if (!empty($filters['action_id'])) {
+        if (! empty($filters['action_id'])) {
             $query->where('category_id', $filters['action_id']);
-        } elseif (!empty($filters['group_id'])) {
+        } elseif (! empty($filters['group_id'])) {
             $categoryIds = Category::where('id', $filters['group_id'])
                 ->orWhere('parent_id', $filters['group_id'])
                 ->pluck('id');
             $query->whereIn('category_id', $categoryIds);
-        } elseif (!empty($filters['block_id'])) {
+        } elseif (! empty($filters['block_id'])) {
             $groupIds = Category::where('parent_id', $filters['block_id'])->pluck('id');
             $categoryIds = Category::whereIn('parent_id', $groupIds)
                 ->orWhere('id', $filters['block_id'])
                 ->orWhereIn('id', $groupIds)
                 ->pluck('id');
             $query->whereIn('category_id', $categoryIds);
-        } elseif (!empty($filters['category_id'])) {
+        } elseif (! empty($filters['category_id'])) {
             $blockIds = Category::where('parent_id', $filters['category_id'])->pluck('id');
             $groupIds = Category::whereIn('parent_id', $blockIds)->pluck('id');
             $categoryIds = Category::whereIn('parent_id', $groupIds)
@@ -627,7 +635,7 @@ class ReportController extends Controller
             $query->whereIn('category_id', $categoryIds);
         }
 
-        if (!empty($filters['expense_classification_id']) && in_array($filters['report_type'], ['expenses', 'expense_classification'])) {
+        if (! empty($filters['expense_classification_id']) && in_array($filters['report_type'], ['expenses', 'expense_classification'])) {
             $query->where('expense_classification_id', $filters['expense_classification_id']);
         }
     }
@@ -644,17 +652,17 @@ class ReportController extends Controller
     private function getGroupByFields($groupBy)
     {
         return [
-            DB::raw(match($groupBy) {
+            DB::raw(match ($groupBy) {
                 'daily' => "DATE_FORMAT(date, '%Y-%m-%d') as period",
                 'monthly' => "DATE_FORMAT(date, '%Y-%m') as period",
                 'yearly' => "DATE_FORMAT(date, '%Y') as period"
-            })
+            }),
         ];
     }
 
     private function getGroupByField($groupBy)
     {
-        return match($groupBy) {
+        return match ($groupBy) {
             'daily' => "DATE_FORMAT(date, '%Y-%m-%d')",
             'monthly' => "DATE_FORMAT(date, '%Y-%m')",
             'yearly' => "DATE_FORMAT(date, '%Y')"
@@ -667,17 +675,17 @@ class ReportController extends Controller
             'generated_at' => now(),
             'title' => $title,
             'type' => $this->getReportTypeName($filters['report_type']),
-            'period' => "De " . Carbon::parse($filters['start_date'])->format('d/m/Y') . " até " . Carbon::parse($filters['end_date'])->format('d/m/Y'),
+            'period' => 'De '.Carbon::parse($filters['start_date'])->format('d/m/Y').' até '.Carbon::parse($filters['end_date'])->format('d/m/Y'),
             'group_by' => $this->getGroupByName($filters['group_by']),
             'category_type' => 'Fonte',
             'category' => Category::find($filters['category_id'])?->name ?? null,
-            'classification' => ExpenseClassification::find($filters['expense_classification_id'])?->name ?? null
+            'classification' => ExpenseClassification::find($filters['expense_classification_id'])?->name ?? null,
         ];
     }
 
     private function getReportTypeName($type)
     {
-        return match($type) {
+        return match ($type) {
             'revenues' => 'Receitas',
             'expenses' => 'Despesas',
             'balance' => 'Balanço',
@@ -688,7 +696,7 @@ class ReportController extends Controller
 
     private function getGroupByName($groupBy)
     {
-        return match($groupBy) {
+        return match ($groupBy) {
             'daily' => 'Diário',
             'monthly' => 'Mensal',
             'yearly' => 'Anual',
@@ -698,14 +706,14 @@ class ReportController extends Controller
 
     private function prepareChartData($items, $reportType, $groupBy)
     {
-        $labels = $items->pluck('period')->map(function($period) use ($groupBy) {
-            return match($groupBy) {
+        $labels = $items->pluck('period')->map(function ($period) use ($groupBy) {
+            return match ($groupBy) {
                 'daily' => Carbon::createFromFormat('Y-m-d', $period)->format('d/m/Y'),
                 'monthly' => Carbon::createFromFormat('Y-m', $period)->format('M/Y'),
                 'yearly' => $period
             };
         })->toArray();
-        
+
         if ($reportType === 'balance') {
             return [
                 'labels' => $labels,
@@ -715,27 +723,27 @@ class ReportController extends Controller
                         'data' => $items->pluck('revenues')->toArray(),
                         'borderColor' => '#198754',
                         'backgroundColor' => '#19875422',
-                        'type' => 'line'
+                        'type' => 'line',
                     ],
                     [
                         'label' => 'Despesas',
                         'data' => $items->pluck('expenses')->toArray(),
                         'borderColor' => '#dc3545',
                         'backgroundColor' => '#dc354522',
-                        'type' => 'line'
+                        'type' => 'line',
                     ],
                     [
                         'label' => 'Saldo',
                         'data' => $items->pluck('balance')->toArray(),
-                        'backgroundColor' => function($context) {
+                        'backgroundColor' => function ($context) {
                             return $context['raw'] >= 0 ? '#0d6efd44' : '#dc354544';
                         },
-                        'borderColor' => function($context) {
+                        'borderColor' => function ($context) {
                             return $context['raw'] >= 0 ? '#0d6efd' : '#dc3545';
                         },
-                        'type' => 'bar'
-                    ]
-                ]
+                        'type' => 'bar',
+                    ],
+                ],
             ];
         }
 
@@ -747,8 +755,8 @@ class ReportController extends Controller
                     'data' => $items->pluck('total')->toArray(),
                     'backgroundColor' => $reportType === 'revenues' ? '#19875444' : '#dc354544',
                     'borderColor' => $reportType === 'revenues' ? '#198754' : '#dc3545',
-                ]
-            ]
+                ],
+            ],
         ];
     }
 
@@ -756,7 +764,7 @@ class ReportController extends Controller
     {
         try {
             \Log::info('Iniciando geração do PDF', ['metadata' => $data['metadata']]);
-            
+
             // Configurar o DomPDF
             $config = [
                 'isRemoteEnabled' => true,
@@ -765,15 +773,15 @@ class ReportController extends Controller
                 'isFontSubsettingEnabled' => true,
                 'defaultMediaType' => 'print',
                 'defaultPaperSize' => 'a4',
-                'defaultPaperOrientation' => 'portrait'
+                'defaultPaperOrientation' => 'portrait',
             ];
-            
+
             // Carregar a view com as configurações
             \Log::info('Carregando view do PDF com configurações', ['config' => $config]);
-            $data['citySettings'] = CitySetting::first() ?? new CitySetting();
+            $data['citySettings'] = CitySetting::first() ?? new CitySetting;
             $pdf = PDF::setOptions($config)->loadView('reports.pdf', $data);
             \Log::info('View do PDF carregada com sucesso');
-            
+
             // Configurar margens (em milímetros)
             $pdf->setPaper('a4', 'portrait');
             $pdf->setOption('margin-top', 10);
@@ -781,16 +789,16 @@ class ReportController extends Controller
             $pdf->setOption('margin-bottom', 10);
             $pdf->setOption('margin-left', 10);
             \Log::info('Configurações do PDF aplicadas');
-            
+
             // Gerar nome do arquivo
-            $filename = 'relatorio_' . now()->format('Y-m-d_His') . '.pdf';
+            $filename = 'relatorio_'.now()->format('Y-m-d_His').'.pdf';
             \Log::info('Nome do arquivo gerado', ['filename' => $filename]);
-            
+
             // Retornar o download
             return $pdf->download($filename);
         } catch (\Exception $e) {
-            \Log::error('Erro ao gerar PDF: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Erro ao gerar PDF: '.$e->getMessage());
+            \Log::error('Stack trace: '.$e->getTraceAsString());
             throw $e;
         }
     }
@@ -801,16 +809,16 @@ class ReportController extends Controller
             \Log::info('Iniciando geração do Excel', [
                 'metadata' => $data['metadata'],
                 'filters' => $data['filters'],
-                'items_count' => count($data['items'])
+                'items_count' => count($data['items']),
             ]);
-            
-            $filename = 'relatorio_' . now()->format('Y-m-d_His') . '.xlsx';
+
+            $filename = 'relatorio_'.now()->format('Y-m-d_His').'.xlsx';
             \Log::info('Nome do arquivo Excel gerado', ['filename' => $filename]);
-            
+
             return Excel::download(new FinancialReport($data), $filename);
         } catch (\Exception $e) {
-            \Log::error('Erro ao gerar Excel: ' . $e->getMessage());
-            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            \Log::error('Erro ao gerar Excel: '.$e->getMessage());
+            \Log::error('Stack trace: '.$e->getTraceAsString());
             throw $e;
         }
     }

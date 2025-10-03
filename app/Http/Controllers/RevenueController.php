@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Revenue;
-use App\Models\Category;
 use App\Http\Requests\StoreRevenueRequest;
 use App\Http\Requests\UpdateRevenueRequest;
+use App\Models\Category;
+use App\Models\Revenue;
 use Illuminate\Http\Request;
 
 class RevenueController extends Controller
@@ -17,12 +17,12 @@ class RevenueController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
-                  ->orWhere('observation', 'like', "%{$search}%")
-                  ->orWhereHas('fonte', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('observation', 'like', "%{$search}%")
+                    ->orWhereHas('fonte', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -40,7 +40,7 @@ class RevenueController extends Controller
         }
 
         $revenues = $query->orderBy('date', 'desc')->paginate(20);
-        
+
         // Data for filters
         $fontes = Category::where('type', 'fonte')->where('active', true)->orderBy('name')->get();
 
@@ -50,12 +50,13 @@ class RevenueController extends Controller
     public function create()
     {
         $fontes = Category::where('type', 'fonte')
-            ->with(['children' => function($query) {
+            ->with(['children' => function ($query) {
                 $query->where('active', true)->orderBy('name');
             }])
             ->where('active', true)
             ->orderBy('name')
             ->get();
+
         return view('revenues.create', compact('fontes'));
     }
 
@@ -118,6 +119,7 @@ class RevenueController extends Controller
             ->where('active', true)
             ->orderBy('name')
             ->get();
+
         return response()->json($blocos);
     }
 
@@ -128,6 +130,7 @@ class RevenueController extends Controller
             ->where('active', true)
             ->orderBy('name')
             ->get();
+
         return response()->json($grupos);
     }
 
@@ -138,6 +141,7 @@ class RevenueController extends Controller
             ->where('active', true)
             ->orderBy('name')
             ->get();
+
         return response()->json($acoes);
     }
 }

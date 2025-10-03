@@ -16,6 +16,7 @@ class ExpenseClassificationController extends Controller
         $classifications = ExpenseClassification::withCount('expenses')
             ->orderBy('name')
             ->paginate(20);
+
         return view('expense-classifications.index', compact('classifications'));
     }
 
@@ -36,7 +37,7 @@ class ExpenseClassificationController extends Controller
             'name' => 'required|string|max:255',
             'code' => 'nullable|string|max:50|unique:expense_classifications',
             'description' => 'nullable|string',
-            'active' => 'boolean'
+            'active' => 'boolean',
         ]);
 
         if ($validator->fails()) {
@@ -76,9 +77,9 @@ class ExpenseClassificationController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'code' => 'nullable|string|max:50|unique:expense_classifications,code,' . $expenseClassification->id,
+            'code' => 'nullable|string|max:50|unique:expense_classifications,code,'.$expenseClassification->id,
             'description' => 'nullable|string',
-            'active' => 'boolean'
+            'active' => 'boolean',
         ]);
 
         if ($validator->fails()) {

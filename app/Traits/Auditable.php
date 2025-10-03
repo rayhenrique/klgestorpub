@@ -29,7 +29,7 @@ trait Auditable
                 'model_type' => get_class($model),
                 'model_id' => $model->id,
                 'old_values' => $oldValues,
-                'new_values' => $newValues
+                'new_values' => $newValues,
             ]);
         }
     }

@@ -2,17 +2,15 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Models\Expense;
-use App\Models\Revenue;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $fillable = [
         'name',
@@ -20,13 +18,16 @@ class Category extends Model
         'type',
         'parent_id',
         'active',
-        'description'
+        'description',
     ];
 
     // Tipos de categoria
     const TYPE_FONTE = 'fonte';
+
     const TYPE_BLOCO = 'bloco';
+
     const TYPE_GRUPO = 'grupo';
+
     const TYPE_ACAO = 'acao';
 
     // Relação com o pai
@@ -108,7 +109,7 @@ class Category extends Model
     // Método para obter o tipo de filho permitido
     public function getAllowedChildType(): ?string
     {
-        return match($this->type) {
+        return match ($this->type) {
             self::TYPE_FONTE => self::TYPE_BLOCO,
             self::TYPE_BLOCO => self::TYPE_GRUPO,
             self::TYPE_GRUPO => self::TYPE_ACAO,
@@ -156,7 +157,7 @@ class Category extends Model
         parent::boot();
 
         static::deleting(function ($category) {
-            if (!$category->canBeDeleted()) {
+            if (! $category->canBeDeleted()) {
                 throw new \Exception($category->getDeletionErrorMessage());
             }
         });

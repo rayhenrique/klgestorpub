@@ -20,7 +20,7 @@ return new class extends Migration
             $table->boolean('active')->default(true);
             $table->text('description')->nullable();
             $table->timestamps();
-            
+
             // Índices
             $table->index('type');
             $table->index('parent_id');

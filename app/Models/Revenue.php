@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Services\ReportCacheService;
 use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use App\Services\ReportCacheService;
+use Illuminate\Database\Eloquent\Model;
 
 class Revenue extends Model
 {
-    use HasFactory, Auditable;
+    use Auditable, HasFactory;
 
     protected $fillable = [
         'description',
@@ -19,12 +19,12 @@ class Revenue extends Model
         'bloco_id',
         'grupo_id',
         'acao_id',
-        'observation'
+        'observation',
     ];
 
     protected $casts = [
         'date' => 'date',
-        'amount' => 'decimal:2'
+        'amount' => 'decimal:2',
     ];
 
     // Relacionamentos com as categorias
@@ -84,7 +84,7 @@ class Revenue extends Model
         parent::boot();
 
         static::saving(function ($revenue) {
-            if (!$revenue->validateCategoryHierarchy()) {
+            if (! $revenue->validateCategoryHierarchy()) {
                 throw new \Exception('A hierarquia das categorias não está correta. Verifique se as categorias selecionadas seguem a estrutura: Fonte > Bloco > Grupo > Ação.');
             }
         });
@@ -93,7 +93,7 @@ class Revenue extends Model
             static::saved(function (Revenue $revenue) {
                 app(ReportCacheService::class)->touchRevenue($revenue);
             });
-        
+
             static::deleted(function (Revenue $revenue) {
                 app(ReportCacheService::class)->touchRevenue($revenue);
             });

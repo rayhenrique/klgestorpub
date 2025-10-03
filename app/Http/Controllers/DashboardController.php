@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\Revenue;
-use App\Models\Expense;
 use App\Models\Category;
+use App\Models\Expense;
+use App\Models\Revenue;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
@@ -25,21 +25,20 @@ class DashboardController extends Controller
     /**
      * Show the application dashboard.
      *
-     * @param Request $request
      * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index(Request $request)
     {
         $period = $request->get('period', 'month');
-        
+
         // Cache key based on period and current date
-        $cacheKey = "dashboard_data_{$period}_" . Carbon::now()->format('Y-m-d');
-        
+        $cacheKey = "dashboard_data_{$period}_".Carbon::now()->format('Y-m-d');
+
         // Cache dashboard data for 1 hour
         $dashboardData = Cache::remember($cacheKey, 3600, function () use ($period) {
             // Get period dates
             $periodDates = $this->getPeriodDates($period);
-            
+
             // Calculate current period totals
             $currentRevenues = Revenue::whereBetween('date', [$periodDates['current_start'], $periodDates['current_end']])->sum('amount');
             $currentExpenses = Expense::whereBetween('date', [$periodDates['current_start'], $periodDates['current_end']])->sum('amount');
@@ -61,7 +60,7 @@ class DashboardController extends Controller
             // Get chart data
             $balanceChartData = $this->getBalanceChartData($period);
             $expensesCategoryData = $this->getExpensesCategoryChartData($periodDates['current_start'], $periodDates['current_end']);
-            
+
             // Prepare monthly data for charts
             $monthlyData = $this->getMonthlyChartData($balanceChartData);
             $expensesByCategory = $this->getExpensesByCategoryData($expensesCategoryData);
@@ -77,7 +76,7 @@ class DashboardController extends Controller
                 'balanceChartData' => $balanceChartData,
                 'expensesCategoryData' => $expensesCategoryData,
                 'monthlyData' => $monthlyData,
-                'expensesByCategory' => $expensesByCategory
+                'expensesByCategory' => $expensesByCategory,
             ];
         });
 
@@ -86,24 +85,21 @@ class DashboardController extends Controller
 
         return view('dashboard', array_merge($dashboardData, [
             'recentTransactions' => $recentTransactions,
-            'period' => $period
+            'period' => $period,
         ]))->with([
             'revenueChange' => $dashboardData['revenueGrowth'],
             'expenseChange' => $dashboardData['expenseGrowth'],
             'balance' => $dashboardData['currentBalance'],
-            'latestTransactions' => $recentTransactions
+            'latestTransactions' => $recentTransactions,
         ]);
     }
 
     /**
      * Get period start and end dates based on period type
-     *
-     * @param string $period
-     * @return array
      */
     private function getPeriodDates(string $period): array
     {
-        return match($period) {
+        return match ($period) {
             'quarter' => [
                 'current_start' => Carbon::now()->startOfQuarter(),
                 'current_end' => Carbon::now()->endOfQuarter(),
@@ -127,11 +123,6 @@ class DashboardController extends Controller
 
     /**
      * Calculate growth percentage between current and previous values
-     *
-     * @param float $current
-     * @param float $previous
-     * @param bool $useAbsoluteForBalance
-     * @return float
      */
     private function calculateGrowthPercentage(float $current, float $previous, bool $useAbsoluteForBalance = false): float
     {
@@ -140,14 +131,12 @@ class DashboardController extends Controller
         }
 
         $denominator = $useAbsoluteForBalance ? abs($previous) : $previous;
+
         return round((($current - $previous) / $denominator) * 100, 1);
     }
 
     /**
      * Get balance chart data for the last 6 periods
-     *
-     * @param string $period
-     * @return array
      */
     private function getBalanceChartData(string $period): array
     {
@@ -156,33 +145,33 @@ class DashboardController extends Controller
         $expenses = collect();
 
         for ($i = 5; $i >= 0; $i--) {
-            $date = match($period) {
+            $date = match ($period) {
                 'quarter' => Carbon::now()->subQuarters($i),
                 'year' => Carbon::now()->subYears($i),
                 default => Carbon::now()->subMonths($i)
             };
 
-            $periodStart = match($period) {
+            $periodStart = match ($period) {
                 'quarter' => $date->copy()->startOfQuarter(),
                 'year' => $date->copy()->startOfYear(),
                 default => $date->copy()->startOfMonth()
             };
 
-            $periodEnd = match($period) {
+            $periodEnd = match ($period) {
                 'quarter' => $date->copy()->endOfQuarter(),
                 'year' => $date->copy()->endOfYear(),
                 default => $date->copy()->endOfMonth()
             };
 
-            $labels->push(match($period) {
-                'quarter' => $date->quarter . 'Q/' . $date->year,
+            $labels->push(match ($period) {
+                'quarter' => $date->quarter.'Q/'.$date->year,
                 'year' => (string) $date->year,
                 default => $date->format('M/Y')
             });
 
             $periodRevenues = Revenue::whereBetween('date', [$periodStart, $periodEnd])->sum('amount');
             $periodExpenses = Expense::whereBetween('date', [$periodStart, $periodEnd])->sum('amount');
-            
+
             $revenues->push($periodRevenues);
             $expenses->push($periodExpenses);
         }
@@ -190,16 +179,12 @@ class DashboardController extends Controller
         return [
             'labels' => $labels,
             'revenues' => $revenues,
-            'expenses' => $expenses
+            'expenses' => $expenses,
         ];
     }
 
     /**
      * Get expenses by category chart data
-     *
-     * @param Carbon $startDate
-     * @param Carbon $endDate
-     * @return array
      */
     private function getExpensesCategoryChartData(Carbon $startDate, Carbon $endDate): array
     {
@@ -213,7 +198,7 @@ class DashboardController extends Controller
 
         return [
             'labels' => $expensesByCategory->pluck('name'),
-            'data' => $expensesByCategory->pluck('total')
+            'data' => $expensesByCategory->pluck('total'),
         ];
     }
 
@@ -229,14 +214,14 @@ class DashboardController extends Controller
             ->latest('date')
             ->take(5)
             ->get()
-            ->map(function($revenue) {
+            ->map(function ($revenue) {
                 return (object) [
                     'date' => $revenue->date,
                     'description' => $revenue->description,
                     'amount' => $revenue->amount,
                     'type' => 'Receita',
                     'badge_color' => 'success',
-                    'category' => $revenue->acao?->name ?? $revenue->fonte?->name ?? 'N/A'
+                    'category' => $revenue->acao?->name ?? $revenue->fonte?->name ?? 'N/A',
                 ];
             });
 
@@ -245,14 +230,14 @@ class DashboardController extends Controller
             ->latest('date')
             ->take(5)
             ->get()
-            ->map(function($expense) {
+            ->map(function ($expense) {
                 return (object) [
                     'date' => $expense->date,
                     'description' => $expense->description,
                     'amount' => $expense->amount,
                     'type' => 'Despesa',
                     'badge_color' => 'danger',
-                    'category' => $expense->acao?->name ?? $expense->fonte?->name ?? 'N/A'
+                    'category' => $expense->acao?->name ?? $expense->fonte?->name ?? 'N/A',
                 ];
             });
 
@@ -264,42 +249,36 @@ class DashboardController extends Controller
 
     /**
      * Transform balance chart data to monthly data format for JavaScript charts
-     *
-     * @param array $balanceChartData
-     * @return array
      */
     private function getMonthlyChartData(array $balanceChartData): array
     {
         $monthlyData = [];
-        
+
         for ($i = 0; $i < count($balanceChartData['labels']); $i++) {
             $monthlyData[] = [
                 'month' => $balanceChartData['labels'][$i],
                 'revenues' => $balanceChartData['revenues'][$i],
-                'expenses' => $balanceChartData['expenses'][$i]
+                'expenses' => $balanceChartData['expenses'][$i],
             ];
         }
-        
+
         return $monthlyData;
     }
 
     /**
      * Transform expenses category data to format expected by JavaScript charts
-     *
-     * @param array $expensesCategoryData
-     * @return array
      */
     private function getExpensesByCategoryData(array $expensesCategoryData): array
     {
         $expensesByCategory = [];
-        
+
         for ($i = 0; $i < count($expensesCategoryData['labels']); $i++) {
             $expensesByCategory[] = [
                 'name' => $expensesCategoryData['labels'][$i],
-                'total' => $expensesCategoryData['data'][$i]
+                'total' => $expensesCategoryData['data'][$i],
             ];
         }
-        
+
         return $expensesByCategory;
     }
 }

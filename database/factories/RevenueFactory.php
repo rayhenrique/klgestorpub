@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Category;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Revenue>
@@ -20,7 +20,7 @@ class RevenueFactory extends Factory
         // Criar hierarquia válida
         $fonte = Category::factory()->fonte()->create();
         $bloco = Category::factory()->bloco()->create(['parent_id' => $fonte->id]);
-        
+
         return [
             'description' => $this->faker->sentence(3),
             'amount' => $this->faker->randomFloat(2, 100, 50000),

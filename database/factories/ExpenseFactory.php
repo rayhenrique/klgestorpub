@@ -20,7 +20,7 @@ class ExpenseFactory extends Factory
         $fonte = \App\Models\Category::factory()->fonte()->create();
         $bloco = \App\Models\Category::factory()->bloco()->create(['parent_id' => $fonte->id]);
         $classification = \App\Models\ExpenseClassification::factory()->create();
-        
+
         return [
             'description' => $this->faker->sentence(3),
             'amount' => $this->faker->randomFloat(2, 100, 50000),

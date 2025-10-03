@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
 
 class ProfileController extends Controller
@@ -18,7 +18,7 @@ class ProfileController extends Controller
     {
         $request->validate([
             'current_password' => ['required', function ($attribute, $value, $fail) {
-                if (!Hash::check($value, Auth::user()->password)) {
+                if (! Hash::check($value, Auth::user()->password)) {
                     $fail('A senha atual está incorreta.');
                 }
             }],
@@ -30,10 +30,10 @@ class ProfileController extends Controller
         ]);
 
         Auth::user()->update([
-            'password' => Hash::make($request->password)
+            'password' => Hash::make($request->password),
         ]);
 
         return redirect()->route('profile.edit')
             ->with('success', 'Senha alterada com sucesso!');
     }
-} 
+}

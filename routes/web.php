@@ -1,21 +1,20 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\UserController;
-use App\Http\Controllers\CitySettingsController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\BackupController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CitySettingsController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\ExpenseClassificationController;
-use App\Http\Controllers\RevenueController;
 use App\Http\Controllers\ExpenseController;
-use App\Http\Middleware\AdminMiddleware;
+use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReportController;
-use App\Http\Controllers\AuditLogController;
-use App\Http\Controllers\DocumentationController;
-use App\Http\Controllers\BackupController;
-
-use App\Http\Controllers\HomeController;
+use App\Http\Controllers\RevenueController;
+use App\Http\Controllers\UserController;
+use App\Http\Middleware\AdminMiddleware;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 
@@ -72,12 +71,12 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth', AdminMiddleware::class])->group(function () {
     // Usuários
     Route::resource('users', UserController::class);
-    
+
     // Configurações da Cidade
     Route::prefix('settings')->name('settings.')->group(function () {
         Route::get('city', [CitySettingsController::class, 'edit'])->name('city.edit');
         Route::put('city', [CitySettingsController::class, 'update'])->name('city.update');
-        
+
         // Backup e Restauração
         Route::prefix('backup')->name('backup.')->group(function () {
             Route::get('/', [BackupController::class, 'index'])->name('index');

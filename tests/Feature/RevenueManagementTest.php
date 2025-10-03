@@ -2,30 +2,31 @@
 
 namespace Tests\Feature;
 
+use App\Models\Category;
+use App\Models\Revenue;
+use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
-use App\Models\User;
-use App\Models\Revenue;
-use App\Models\Category;
-use Carbon\Carbon;
 
 class RevenueManagementTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
     private User $user;
+
     private array $categories;
 
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Create a test user
         $this->user = User::factory()->create([
-            'role' => 'admin'
+            'role' => 'admin',
         ]);
-        
+
         // Create test categories hierarchy
         $this->categories = $this->createCategoryHierarchy();
     }
@@ -36,10 +37,10 @@ class RevenueManagementTest extends TestCase
     public function test_authenticated_user_can_view_revenue_index(): void
     {
         $response = $this->actingAs($this->user)
-                         ->get(route('revenues.index'));
+            ->get(route('revenues.index'));
 
         $response->assertOk()
-                 ->assertViewIs('revenues.index');
+            ->assertViewIs('revenues.index');
     }
 
     /**
@@ -48,7 +49,7 @@ class RevenueManagementTest extends TestCase
     public function test_unauthenticated_user_cannot_view_revenue_index(): void
     {
         $response = $this->get(route('revenues.index'));
-        
+
         $response->assertRedirect(route('login'));
     }
 
@@ -65,18 +66,18 @@ class RevenueManagementTest extends TestCase
             'bloco_id' => $this->categories['bloco']->id,
             'grupo_id' => $this->categories['grupo']->id,
             'acao_id' => $this->categories['acao']->id,
-            'observation' => 'Test observation'
+            'observation' => 'Test observation',
         ];
 
         $response = $this->actingAs($this->user)
-                         ->post(route('revenues.store'), $revenueData);
+            ->post(route('revenues.store'), $revenueData);
 
         $response->assertRedirect(route('revenues.index'))
-                 ->assertSessionHas('success');
+            ->assertSessionHas('success');
 
         $this->assertDatabaseHas('revenues', [
             'description' => 'Test Revenue',
-            'amount' => 1500.50
+            'amount' => 1500.50,
         ]);
     }
 
@@ -93,7 +94,7 @@ class RevenueManagementTest extends TestCase
         ];
 
         $response = $this->actingAs($this->user)
-                         ->post(route('revenues.store'), $invalidData);
+            ->post(route('revenues.store'), $invalidData);
 
         $response->assertSessionHasErrors([
             'description',
@@ -102,7 +103,7 @@ class RevenueManagementTest extends TestCase
             'fonte_id',
             'bloco_id',
             'grupo_id',
-            'acao_id'
+            'acao_id',
         ]);
     }
 
@@ -122,14 +123,14 @@ class RevenueManagementTest extends TestCase
 
         $updateData = [
             'description' => 'Updated Description',
-            'amount' => 1500.00
+            'amount' => 1500.00,
         ];
 
         $response = $this->actingAs($this->user)
-                         ->put(route('revenues.update', $revenue), $updateData);
+            ->put(route('revenues.update', $revenue), $updateData);
 
         $response->assertRedirect(route('revenues.index'))
-                 ->assertSessionHas('success');
+            ->assertSessionHas('success');
 
         $revenue->refresh();
         $this->assertEquals('Updated Description', $revenue->description);
@@ -149,13 +150,13 @@ class RevenueManagementTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user)
-                         ->delete(route('revenues.destroy', $revenue));
+            ->delete(route('revenues.destroy', $revenue));
 
         $response->assertRedirect(route('revenues.index'))
-                 ->assertSessionHas('success');
+            ->assertSessionHas('success');
 
         $this->assertDatabaseMissing('revenues', [
-            'id' => $revenue->id
+            'id' => $revenue->id,
         ]);
     }
 
@@ -202,35 +203,35 @@ class RevenueManagementTest extends TestCase
         $fonte = Category::create([
             'name' => 'Test Fonte',
             'type' => 'fonte',
-            'active' => true
+            'active' => true,
         ]);
 
         $bloco = Category::create([
             'name' => 'Test Bloco',
             'type' => 'bloco',
             'parent_id' => $fonte->id,
-            'active' => true
+            'active' => true,
         ]);
 
         $grupo = Category::create([
             'name' => 'Test Grupo',
             'type' => 'grupo',
             'parent_id' => $bloco->id,
-            'active' => true
+            'active' => true,
         ]);
 
         $acao = Category::create([
             'name' => 'Test Ação',
             'type' => 'acao',
             'parent_id' => $grupo->id,
-            'active' => true
+            'active' => true,
         ]);
 
         return [
             'fonte' => $fonte,
             'bloco' => $bloco,
             'grupo' => $grupo,
-            'acao' => $acao
+            'acao' => $acao,
         ];
     }
 }

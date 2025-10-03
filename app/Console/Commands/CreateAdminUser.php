@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\User;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Hash;
 
 class CreateAdminUser extends Command
@@ -30,7 +30,7 @@ class CreateAdminUser extends Command
         try {
             // Verificar se o usuário já existe
             $existingUser = User::where('email', 'rayhenrique@gmail.com')->first();
-            
+
             if ($existingUser) {
                 $this->info('Usuário já existe. Atualizando dados...');
                 $existingUser->update([
@@ -51,25 +51,27 @@ class CreateAdminUser extends Command
                 ]);
                 $this->info('Usuário administrador criado com sucesso!');
             }
-            
+
             // Verificar se foi criado
             $user = User::where('email', 'rayhenrique@gmail.com')->first();
             if ($user) {
                 $this->info('Verificação: Usuário encontrado no banco de dados');
-                $this->line('ID: ' . $user->id);
-                $this->line('Nome: ' . $user->name);
-                $this->line('Email: ' . $user->email);
-                $this->line('Role: ' . $user->role);
-                $this->line('Ativo: ' . ($user->active ? 'Sim' : 'Não'));
+                $this->line('ID: '.$user->id);
+                $this->line('Nome: '.$user->name);
+                $this->line('Email: '.$user->email);
+                $this->line('Role: '.$user->role);
+                $this->line('Ativo: '.($user->active ? 'Sim' : 'Não'));
             } else {
                 $this->error('ERRO: Usuário não foi encontrado após criação!');
+
                 return 1;
             }
-            
+
             return 0;
-            
+
         } catch (\Exception $e) {
-            $this->error('ERRO: ' . $e->getMessage());
+            $this->error('ERRO: '.$e->getMessage());
+
             return 1;
         }
     }

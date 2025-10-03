@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Expense;
-use App\Models\Category;
-use App\Models\ExpenseClassification;
-use Illuminate\Http\Request;
 use App\Http\Requests\StoreExpenseRequest;
 use App\Http\Requests\UpdateExpenseRequest;
+use App\Models\Category;
+use App\Models\Expense;
+use App\Models\ExpenseClassification;
+use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
@@ -18,15 +18,15 @@ class ExpenseController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('description', 'like', "%{$search}%")
-                  ->orWhere('observation', 'like', "%{$search}%")
-                  ->orWhereHas('fonte', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  })
-                  ->orWhereHas('classification', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('observation', 'like', "%{$search}%")
+                    ->orWhereHas('fonte', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('classification', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -47,7 +47,7 @@ class ExpenseController extends Controller
         }
 
         $expenses = $query->orderBy('date', 'desc')->paginate(20);
-        
+
         // Data for filters
         $fontes = Category::where('type', 'fonte')->where('active', true)->orderBy('name')->get();
         $classifications = ExpenseClassification::where('active', true)->orderBy('name')->get();
@@ -58,7 +58,7 @@ class ExpenseController extends Controller
     public function create()
     {
         $fontes = Category::where('type', 'fonte')
-            ->with(['children' => function($query) {
+            ->with(['children' => function ($query) {
                 $query->where('active', true)->orderBy('name');
             }])
             ->where('active', true)
@@ -67,6 +67,7 @@ class ExpenseController extends Controller
         $expenseClassifications = ExpenseClassification::where('active', true)
             ->orderBy('name')
             ->get();
+
         return view('expenses.create', compact('fontes', 'expenseClassifications'));
     }
 
@@ -138,6 +139,7 @@ class ExpenseController extends Controller
             ->where('active', true)
             ->orderBy('name')
             ->get();
+
         return response()->json($blocos);
     }
 
@@ -148,6 +150,7 @@ class ExpenseController extends Controller
             ->where('active', true)
             ->orderBy('name')
             ->get();
+
         return response()->json($grupos);
     }
 
@@ -158,6 +161,7 @@ class ExpenseController extends Controller
             ->where('active', true)
             ->orderBy('name')
             ->get();
+
         return response()->json($acoes);
     }
 }

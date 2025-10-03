@@ -27,7 +27,7 @@ class StoreCategoryRequest extends FormRequest
             'type' => 'required|in:fonte,bloco,grupo,acao',
             'parent_id' => 'nullable|exists:categories,id',
             'description' => 'nullable|string|max:1000',
-            'active' => 'boolean'
+            'active' => 'boolean',
         ];
     }
 

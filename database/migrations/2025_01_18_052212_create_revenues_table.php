@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreignId('acao_id')->nullable()->constrained('categories');
             $table->text('observation')->nullable();
             $table->timestamps();
-            
+
             // Índices para melhor performance
             $table->index('date');
             $table->index(['fonte_id', 'bloco_id', 'grupo_id', 'acao_id']);

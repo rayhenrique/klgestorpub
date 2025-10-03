@@ -14,7 +14,7 @@ class ExpenseClassification extends Model
         'name',
         'code',
         'description',
-        'active'
+        'active',
     ];
 
     protected $casts = [

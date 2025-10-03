@@ -14,7 +14,7 @@ class AuditLogController extends Controller
 
         // Filtros
         if ($request->has('model_type')) {
-            $query->where('model_type', 'like', '%' . $request->model_type . '%');
+            $query->where('model_type', 'like', '%'.$request->model_type.'%');
         }
 
         if ($request->has('action')) {
@@ -38,7 +38,7 @@ class AuditLogController extends Controller
         // Preparar dados para os filtros
         $modelTypes = AuditLog::distinct()->pluck('model_type');
         $users = \App\Models\User::all();
-        
+
         return view('audit.index', compact('logs', 'modelTypes', 'users'));
     }
 

@@ -26,6 +26,7 @@ class ResetPasswordController extends Controller
      * @var string
      */
     protected $redirectTo = '/dashboard';
+
     public function redirectPath()
     {
         return '/dashboard';

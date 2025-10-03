@@ -2,9 +2,9 @@
 
 namespace Tests\Unit\Models;
 
-use Tests\TestCase;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
 
 class UserTest extends TestCase
 {
@@ -15,10 +15,10 @@ class UserTest extends TestCase
     {
         // Criar usuário admin
         $adminUser = User::factory()->create(['role' => 'admin']);
-        
+
         // Criar usuário regular
         $regularUser = User::factory()->create(['role' => 'operator']);
-        
+
         // Verificar se o método isAdmin funciona corretamente
         $this->assertTrue($adminUser->isAdmin());
         $this->assertFalse($regularUser->isAdmin());
@@ -29,10 +29,10 @@ class UserTest extends TestCase
     {
         // Criar usuário admin
         $adminUser = User::factory()->create(['role' => 'admin']);
-        
+
         // Criar usuário operator
         $operatorUser = User::factory()->create(['role' => 'operator']);
-        
+
         // Verificar se apenas admin retorna true
         $this->assertTrue($adminUser->isAdmin());
         $this->assertFalse($operatorUser->isAdmin());
@@ -43,7 +43,7 @@ class UserTest extends TestCase
     {
         // Criar usuário com role operator
         $user = User::factory()->create(['role' => 'operator']);
-        
+
         // Verificar se retorna false para role operator
         $this->assertFalse($user->isAdmin());
     }
@@ -53,16 +53,16 @@ class UserTest extends TestCase
     {
         // Criar usuário
         $user = User::factory()->create(['role' => 'admin']);
-        
+
         // Capturar logs
         $logMessages = [];
         \Log::listen(function ($message) use (&$logMessages) {
             $logMessages[] = $message;
         });
-        
+
         // Chamar método isAdmin
         $user->isAdmin();
-        
+
         // Verificar que não há logs desnecessários
         $this->assertEmpty($logMessages, 'O método isAdmin() não deve gerar logs desnecessários');
     }

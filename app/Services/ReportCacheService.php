@@ -2,17 +2,22 @@
 
 namespace App\Services;
 
-use App\Models\Revenue;
 use App\Models\Expense;
+use App\Models\Revenue;
 use Illuminate\Support\Facades\Cache;
 
 class ReportCacheService
 {
     private const VERSION_GLOBAL = 'report_version:global';
+
     private const VERSION_FONTE = 'report_version:fonte:';
+
     private const VERSION_BLOCO = 'report_version:bloco:';
+
     private const VERSION_GRUPO = 'report_version:grupo:';
+
     private const VERSION_ACAO = 'report_version:acao:';
+
     private const VERSION_CLASSIFICATION = 'report_version:classification:';
 
     /**
@@ -21,17 +26,18 @@ class ReportCacheService
     public function buildBaseKey(array $filters): string
     {
         $parts = [
-            'type=' . ($filters['report_type'] ?? ''),
-            'group=' . ($filters['group_by'] ?? ''),
-            'start=' . ($filters['start_date'] ?? ''),
-            'end=' . ($filters['end_date'] ?? ''),
-            'fonte=' . ($filters['category_id'] ?? ''),
-            'bloco=' . ($filters['block_id'] ?? ''),
-            'grupo=' . ($filters['group_id'] ?? ''),
-            'acao=' . ($filters['action_id'] ?? ''),
-            'class=' . ($filters['expense_classification_id'] ?? ''),
+            'type='.($filters['report_type'] ?? ''),
+            'group='.($filters['group_by'] ?? ''),
+            'start='.($filters['start_date'] ?? ''),
+            'end='.($filters['end_date'] ?? ''),
+            'fonte='.($filters['category_id'] ?? ''),
+            'bloco='.($filters['block_id'] ?? ''),
+            'grupo='.($filters['group_id'] ?? ''),
+            'acao='.($filters['action_id'] ?? ''),
+            'class='.($filters['expense_classification_id'] ?? ''),
         ];
-        return 'report:' . md5(implode('|', $parts));
+
+        return 'report:'.md5(implode('|', $parts));
     }
 
     /**
@@ -40,11 +46,12 @@ class ReportCacheService
     public function getCompositeVersion(array $filters): string
     {
         $global = $this->getVersion(self::VERSION_GLOBAL);
-        $fonte = !empty($filters['category_id']) ? $this->getVersion(self::VERSION_FONTE . $filters['category_id']) : 0;
-        $bloco = !empty($filters['block_id']) ? $this->getVersion(self::VERSION_BLOCO . $filters['block_id']) : 0;
-        $grupo = !empty($filters['group_id']) ? $this->getVersion(self::VERSION_GRUPO . $filters['group_id']) : 0;
-        $acao = !empty($filters['action_id']) ? $this->getVersion(self::VERSION_ACAO . $filters['action_id']) : 0;
-        $class = !empty($filters['expense_classification_id']) ? $this->getVersion(self::VERSION_CLASSIFICATION . $filters['expense_classification_id']) : 0;
+        $fonte = ! empty($filters['category_id']) ? $this->getVersion(self::VERSION_FONTE.$filters['category_id']) : 0;
+        $bloco = ! empty($filters['block_id']) ? $this->getVersion(self::VERSION_BLOCO.$filters['block_id']) : 0;
+        $grupo = ! empty($filters['group_id']) ? $this->getVersion(self::VERSION_GRUPO.$filters['group_id']) : 0;
+        $acao = ! empty($filters['action_id']) ? $this->getVersion(self::VERSION_ACAO.$filters['action_id']) : 0;
+        $class = ! empty($filters['expense_classification_id']) ? $this->getVersion(self::VERSION_CLASSIFICATION.$filters['expense_classification_id']) : 0;
+
         return "v{$global}-f{$fonte}-b{$bloco}-g{$grupo}-a{$acao}-c{$class}";
     }
 
@@ -62,6 +69,7 @@ class ReportCacheService
             'balance' => ['daily' => 600, 'monthly' => 1200, 'yearly' => 3600],
             'expense_classification' => ['daily' => 600, 'monthly' => 1800, 'yearly' => 3600],
         ];
+
         return $map[$type][$group] ?? 900;
     }
 
@@ -71,11 +79,21 @@ class ReportCacheService
     public function registerCachedReport(string $cacheKey, array $filters): void
     {
         $this->addKeyToIndex('report_index:global', $cacheKey);
-        if (!empty($filters['category_id'])) $this->addKeyToIndex(self::VERSION_FONTE . $filters['category_id'] . ':index', $cacheKey);
-        if (!empty($filters['block_id'])) $this->addKeyToIndex(self::VERSION_BLOCO . $filters['block_id'] . ':index', $cacheKey);
-        if (!empty($filters['group_id'])) $this->addKeyToIndex(self::VERSION_GRUPO . $filters['group_id'] . ':index', $cacheKey);
-        if (!empty($filters['action_id'])) $this->addKeyToIndex(self::VERSION_ACAO . $filters['action_id'] . ':index', $cacheKey);
-        if (!empty($filters['expense_classification_id'])) $this->addKeyToIndex(self::VERSION_CLASSIFICATION . $filters['expense_classification_id'] . ':index', $cacheKey);
+        if (! empty($filters['category_id'])) {
+            $this->addKeyToIndex(self::VERSION_FONTE.$filters['category_id'].':index', $cacheKey);
+        }
+        if (! empty($filters['block_id'])) {
+            $this->addKeyToIndex(self::VERSION_BLOCO.$filters['block_id'].':index', $cacheKey);
+        }
+        if (! empty($filters['group_id'])) {
+            $this->addKeyToIndex(self::VERSION_GRUPO.$filters['group_id'].':index', $cacheKey);
+        }
+        if (! empty($filters['action_id'])) {
+            $this->addKeyToIndex(self::VERSION_ACAO.$filters['action_id'].':index', $cacheKey);
+        }
+        if (! empty($filters['expense_classification_id'])) {
+            $this->addKeyToIndex(self::VERSION_CLASSIFICATION.$filters['expense_classification_id'].':index', $cacheKey);
+        }
     }
 
     /**
@@ -86,20 +104,20 @@ class ReportCacheService
         $this->bump(self::VERSION_GLOBAL);
         $this->forgetIndex('report_index:global');
         if ($revenue->fonte_id) {
-            $this->bump(self::VERSION_FONTE . $revenue->fonte_id);
-            $this->forgetIndex(self::VERSION_FONTE . $revenue->fonte_id . ':index');
+            $this->bump(self::VERSION_FONTE.$revenue->fonte_id);
+            $this->forgetIndex(self::VERSION_FONTE.$revenue->fonte_id.':index');
         }
         if ($revenue->bloco_id) {
-            $this->bump(self::VERSION_BLOCO . $revenue->bloco_id);
-            $this->forgetIndex(self::VERSION_BLOCO . $revenue->bloco_id . ':index');
+            $this->bump(self::VERSION_BLOCO.$revenue->bloco_id);
+            $this->forgetIndex(self::VERSION_BLOCO.$revenue->bloco_id.':index');
         }
         if ($revenue->grupo_id) {
-            $this->bump(self::VERSION_GRUPO . $revenue->grupo_id);
-            $this->forgetIndex(self::VERSION_GRUPO . $revenue->grupo_id . ':index');
+            $this->bump(self::VERSION_GRUPO.$revenue->grupo_id);
+            $this->forgetIndex(self::VERSION_GRUPO.$revenue->grupo_id.':index');
         }
         if ($revenue->acao_id) {
-            $this->bump(self::VERSION_ACAO . $revenue->acao_id);
-            $this->forgetIndex(self::VERSION_ACAO . $revenue->acao_id . ':index');
+            $this->bump(self::VERSION_ACAO.$revenue->acao_id);
+            $this->forgetIndex(self::VERSION_ACAO.$revenue->acao_id.':index');
         }
     }
 
@@ -111,24 +129,24 @@ class ReportCacheService
         $this->bump(self::VERSION_GLOBAL);
         $this->forgetIndex('report_index:global');
         if ($expense->fonte_id) {
-            $this->bump(self::VERSION_FONTE . $expense->fonte_id);
-            $this->forgetIndex(self::VERSION_FONTE . $expense->fonte_id . ':index');
+            $this->bump(self::VERSION_FONTE.$expense->fonte_id);
+            $this->forgetIndex(self::VERSION_FONTE.$expense->fonte_id.':index');
         }
         if ($expense->bloco_id) {
-            $this->bump(self::VERSION_BLOCO . $expense->bloco_id);
-            $this->forgetIndex(self::VERSION_BLOCO . $expense->bloco_id . ':index');
+            $this->bump(self::VERSION_BLOCO.$expense->bloco_id);
+            $this->forgetIndex(self::VERSION_BLOCO.$expense->bloco_id.':index');
         }
         if ($expense->grupo_id) {
-            $this->bump(self::VERSION_GRUPO . $expense->grupo_id);
-            $this->forgetIndex(self::VERSION_GRUPO . $expense->grupo_id . ':index');
+            $this->bump(self::VERSION_GRUPO.$expense->grupo_id);
+            $this->forgetIndex(self::VERSION_GRUPO.$expense->grupo_id.':index');
         }
         if ($expense->acao_id) {
-            $this->bump(self::VERSION_ACAO . $expense->acao_id);
-            $this->forgetIndex(self::VERSION_ACAO . $expense->acao_id . ':index');
+            $this->bump(self::VERSION_ACAO.$expense->acao_id);
+            $this->forgetIndex(self::VERSION_ACAO.$expense->acao_id.':index');
         }
         if ($expense->expense_classification_id) {
-            $this->bump(self::VERSION_CLASSIFICATION . $expense->expense_classification_id);
-            $this->forgetIndex(self::VERSION_CLASSIFICATION . $expense->expense_classification_id . ':index');
+            $this->bump(self::VERSION_CLASSIFICATION.$expense->expense_classification_id);
+            $this->forgetIndex(self::VERSION_CLASSIFICATION.$expense->expense_classification_id.':index');
         }
     }
 
@@ -153,7 +171,7 @@ class ReportCacheService
     private function addKeyToIndex(string $indexKey, string $cacheKey): void
     {
         $list = Cache::get($indexKey, []);
-        if (!in_array($cacheKey, $list, true)) {
+        if (! in_array($cacheKey, $list, true)) {
             $list[] = $cacheKey;
             Cache::forever($indexKey, $list);
         }

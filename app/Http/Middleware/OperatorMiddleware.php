@@ -16,4 +16,4 @@ class OperatorMiddleware
 
         return $next($request);
     }
-} 
+}

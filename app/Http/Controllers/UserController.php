@@ -12,6 +12,7 @@ class UserController extends Controller
     public function index()
     {
         $users = User::all();
+
         return view('settings.users.index', compact('users'));
     }
 
@@ -27,7 +28,7 @@ class UserController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'role' => 'required|in:admin,operator',
-            'active' => 'boolean'
+            'active' => 'boolean',
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
@@ -51,7 +52,7 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
             'role' => 'required|in:admin,operator',
-            'active' => 'boolean'
+            'active' => 'boolean',
         ]);
 
         if (empty($validated['password'])) {
@@ -79,4 +80,4 @@ class UserController extends Controller
         return redirect()->route('users.index')
             ->with('success', 'Usuário excluído com sucesso.');
     }
-} 
+}

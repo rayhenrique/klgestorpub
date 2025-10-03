@@ -12,12 +12,12 @@ class AuditLog extends Model
         'model_type',
         'model_id',
         'old_values',
-        'new_values'
+        'new_values',
     ];
 
     protected $casts = [
         'old_values' => 'array',
-        'new_values' => 'array'
+        'new_values' => 'array',
     ];
 
     public function user()

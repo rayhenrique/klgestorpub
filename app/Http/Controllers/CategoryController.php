@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use Illuminate\Http\Request;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
+use App\Models\Category;
+use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
@@ -16,10 +16,10 @@ class CategoryController extends Controller
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('code', 'like', "%{$search}%")
-                  ->orWhere('description', 'like', "%{$search}%");
+                    ->orWhere('code', 'like', "%{$search}%")
+                    ->orWhere('description', 'like', "%{$search}%");
             });
         }
 
@@ -29,6 +29,7 @@ class CategoryController extends Controller
         }
 
         $fontes = $query->paginate(20);
+
         return view('categories.index', compact('fontes'));
     }
 
@@ -38,13 +39,13 @@ class CategoryController extends Controller
             Category::TYPE_FONTE => 'Fonte',
             Category::TYPE_BLOCO => 'Bloco',
             Category::TYPE_GRUPO => 'Grupo',
-            Category::TYPE_ACAO => 'Ação'
+            Category::TYPE_ACAO => 'Ação',
         ];
-        
+
         $parents = Category::where('type', '!=', Category::TYPE_ACAO)
             ->where('active', true)
             ->get();
-            
+
         return view('categories.create', compact('types', 'parents'));
     }
 
@@ -65,14 +66,14 @@ class CategoryController extends Controller
             Category::TYPE_FONTE => 'Fonte',
             Category::TYPE_BLOCO => 'Bloco',
             Category::TYPE_GRUPO => 'Grupo',
-            Category::TYPE_ACAO => 'Ação'
+            Category::TYPE_ACAO => 'Ação',
         ];
-        
+
         $parents = Category::where('type', '!=', Category::TYPE_ACAO)
             ->where('id', '!=', $category->id)
             ->where('active', true)
             ->get();
-            
+
         return view('categories.edit', compact('category', 'types', 'parents'));
     }
 
@@ -90,7 +91,7 @@ class CategoryController extends Controller
     public function destroy(Category $category)
     {
         $name = $category->name;
-        $typeLabel = match($category->type) {
+        $typeLabel = match ($category->type) {
             'fonte' => 'Fonte',
             'bloco' => 'Bloco',
             'grupo' => 'Grupo',
@@ -123,8 +124,9 @@ class CategoryController extends Controller
         if ($hasDependencies) {
             // Inativar a categoria ao invés de excluir
             $category->update(['active' => false]);
-            
+
             $dependenciesStr = implode(', ', $dependencies);
+
             return redirect()
                 ->route('categories.index')
                 ->with('warning', sprintf('A %s "%s" não pode ser excluída pois possui %s associadas. A categoria foi inativada para preservar o histórico.',
@@ -136,6 +138,7 @@ class CategoryController extends Controller
 
         try {
             $category->delete();
+
             return redirect()
                 ->route('categories.index')
                 ->with('success', sprintf('A %s "%s" foi excluída com sucesso!', $typeLabel, $name));
@@ -143,6 +146,7 @@ class CategoryController extends Controller
             // Tentar inativar em caso de erro na exclusão
             try {
                 $category->update(['active' => false]);
+
                 return redirect()
                     ->route('categories.index')
                     ->with('warning', sprintf('Não foi possível excluir a %s "%s" devido a dependências. A categoria foi inativada para preservar o histórico.',
@@ -173,15 +177,15 @@ class CategoryController extends Controller
     public function getAvailableParents(Request $request)
     {
         $type = $request->input('type');
-        
-        $parentType = match($type) {
+
+        $parentType = match ($type) {
             Category::TYPE_BLOCO => Category::TYPE_FONTE,
             Category::TYPE_GRUPO => Category::TYPE_BLOCO,
             Category::TYPE_ACAO => Category::TYPE_GRUPO,
             default => null,
         };
 
-        if (!$parentType) {
+        if (! $parentType) {
             return response()->json([]);
         }
 
