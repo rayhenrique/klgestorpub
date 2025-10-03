@@ -15,9 +15,9 @@ use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\DocumentationController;
 use App\Http\Controllers\BackupController;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+use App\Http\Controllers\HomeController;
+
+Route::get('/', [HomeController::class, 'index'])->name('home');
 
 // Redirect específico para subinstância paodeacucar
 Route::redirect('/paodeacucar', '/paodeacucar/login')->name('paodeacucar.redirect');
