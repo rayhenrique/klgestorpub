@@ -64,11 +64,11 @@ class ExpenseController extends Controller
             ->where('active', true)
             ->orderBy('name')
             ->get();
-        $expenseClassifications = ExpenseClassification::where('active', true)
+        $classifications = ExpenseClassification::where('active', true)
             ->orderBy('name')
             ->get();
 
-        return view('expenses.create', compact('fontes', 'expenseClassifications'));
+        return view('expenses.create', compact('fontes', 'classifications'));
     }
 
     public function store(StoreExpenseRequest $request)

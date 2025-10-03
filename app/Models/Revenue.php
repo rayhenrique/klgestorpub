@@ -54,7 +54,7 @@ class Revenue extends Model
         // Validar se o bloco pertence à fonte especificada
         if ($this->fonte_id && $this->bloco_id) {
             $bloco = Category::find($this->bloco_id);
-            if ($bloco && $bloco->parent_id !== $this->fonte_id) {
+            if ($bloco && (int) $bloco->parent_id !== (int) $this->fonte_id) {
                 return false;
             }
         }
@@ -62,7 +62,7 @@ class Revenue extends Model
         // Validar se o grupo pertence ao bloco especificado
         if ($this->bloco_id && $this->grupo_id) {
             $grupo = Category::find($this->grupo_id);
-            if ($grupo && $grupo->parent_id !== $this->bloco_id) {
+            if ($grupo && (int) $grupo->parent_id !== (int) $this->bloco_id) {
                 return false;
             }
         }
@@ -70,7 +70,7 @@ class Revenue extends Model
         // Validar se a ação pertence ao grupo especificado
         if ($this->grupo_id && $this->acao_id) {
             $acao = Category::find($this->acao_id);
-            if ($acao && $acao->parent_id !== $this->grupo_id) {
+            if ($acao && (int) $acao->parent_id !== (int) $this->grupo_id) {
                 return false;
             }
         }

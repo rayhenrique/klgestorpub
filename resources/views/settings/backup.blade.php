@@ -229,8 +229,7 @@
 @endsection
 
 @push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
+<script type="module">
 $(document).ready(function() {
     // Criar backup
     $('#createBackupBtn').click(function() {
@@ -326,7 +325,7 @@ $(document).ready(function() {
             timeout: 300000, // 5 minutos timeout
             success: function(response) {
                 hideLoading();
-                $('#uploadModal').modal('hide');
+                hideBsModal('uploadModal');
                 
                 if (response.success) {
                     showAlert('success', response.message);
@@ -367,11 +366,11 @@ $(document).ready(function() {
     $('.restore-btn').click(function() {
         const filename = $(this).data('filename');
         $('#restoreFilename').text(filename);
-        $('#restoreModal').modal('show');
+        showBsModal('restoreModal');
         
         $('#confirmRestoreBtn').off('click').on('click', function() {
             showLoading('Restaurando banco de dados...');
-            $('#restoreModal').modal('hide');
+            hideBsModal('restoreModal');
             
             $.ajax({
                 url: '{{ route("settings.backup.restore") }}',
@@ -403,11 +402,11 @@ $(document).ready(function() {
     $('.delete-btn').click(function() {
         const filename = $(this).data('filename');
         $('#deleteFilename').text(filename);
-        $('#deleteModal').modal('show');
+        showBsModal('deleteModal');
         
         $('#confirmDeleteBtn').off('click').on('click', function() {
             showLoading('Deletando arquivo...');
-            $('#deleteModal').modal('hide');
+            hideBsModal('deleteModal');
             
             $.ajax({
                 url: '{{ route("settings.backup.delete") }}',
@@ -464,6 +463,36 @@ $(document).ready(function() {
             setTimeout(() => {
                 $('.alert-success').fadeOut();
             }, 3000);
+        }
+    }
+
+    // Helpers de compatibilidade para Bootstrap 5 / jQuery plugin
+    function getOrCreateModal(id) {
+        const el = document.getElementById(id);
+        if (!el) return null;
+        if (window.bootstrap && typeof bootstrap.Modal !== 'undefined') {
+            return bootstrap.Modal.getOrCreateInstance(el);
+        }
+        return null;
+    }
+
+    function showBsModal(id) {
+        const el = document.getElementById(id);
+        const instance = getOrCreateModal(id);
+        if (instance) {
+            instance.show();
+        } else if (window.$ && $(el).modal) {
+            $(el).modal('show');
+        }
+    }
+
+    function hideBsModal(id) {
+        const el = document.getElementById(id);
+        const instance = getOrCreateModal(id);
+        if (instance) {
+            instance.hide();
+        } else if (window.$ && $(el).modal) {
+            $(el).modal('hide');
         }
     }
 });

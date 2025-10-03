@@ -113,8 +113,6 @@
         @include('layouts.footer')
     @endif
     
-    @stack('scripts')
-
     <script>
         // Função para mostrar notificação de sucesso
         function showSuccess(message) {
@@ -130,10 +128,7 @@
             });
         }
 
-        // Se houver mensagem de sucesso na sessão, mostra a notificação
-        @if(session('success'))
-            showSuccess("{{ session('success') }}");
-        @endif
+
 
         function confirmDelete(event, message) {
             event.preventDefault();
@@ -278,5 +273,8 @@
             });
         });
     </script>
+
+    {{-- Scripts adicionais empurrados pelas views --}}
+    @stack('scripts')
 </body>
 </html>
