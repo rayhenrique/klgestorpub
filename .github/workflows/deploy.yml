@@ -9,7 +9,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       
       - name: Configurar SSH
         run: |
@@ -25,13 +25,32 @@ jobs:
           END
       
       - name: Deploy para VPS
+        shell: bash
         run: |
-          ssh vps 'cd /var/www/klgestorpub && \
-          git pull origin main && \
-          composer install && \
-          php artisan migrate --force && \
-          php artisan config:cache && \
-          php artisan route:cache && \
-          php artisan view:cache && \
-          pm2 restart "php artisan serve --host=0.0.0.0 --port=8000" --name klgestorpub
-          ' 
+          set -euxo pipefail
+          ssh vps 'set -euxo pipefail
+          if [ ! -d "/var/www/klgestorpub" ]; then echo "Diretório /var/www/klgestorpub não encontrado"; exit 1; fi
+          cd /var/www/klgestorpub
+          echo "[INFO] Git status antes do pull:" || true
+          git status || true
+          git fetch --all --prune
+          git reset --hard origin/main
+          export COMPOSER_ALLOW_SUPERUSER=1
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+          php artisan config:clear
+          php artisan route:clear
+          php artisan view:clear
+          php artisan migrate --force
+          php artisan config:cache
+          php artisan route:cache
+          php artisan view:cache
+          if command -v pm2 >/dev/null; then
+            echo "[INFO] PM2 encontrado; reiniciando processo"
+            pm2 restart klgestorpub || pm2 start "php artisan serve --host=0.0.0.0 --port=8000" --name klgestorpub
+            pm2 save || true
+            pm2 status || true
+          else
+            echo "[WARN] PM2 não instalado; iniciando servidor com nohup"
+            nohup php artisan serve --host=0.0.0.0 --port=8000 >/var/www/klgestorpub/storage/logs/server.log 2>&1 &
+          fi
+          '
