@@ -19,6 +19,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// Redirect específico para subinstância paodeacucar
+Route::redirect('/paodeacucar', '/paodeacucar/login')->name('paodeacucar.redirect');
+
+// Redirect específico para subinstância olhodaguadasflores
+Route::redirect('/olhodaguadasflores', '/olhodaguadasflores/login')->name('olhodaguadasflores.redirect');
+
 // Desabilita o registro de novos usuários
 Auth::routes(['register' => false]);
 

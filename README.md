@@ -522,5 +522,47 @@ php artisan cache:clear
 
 ---
 
+## 🧭 Fluxo de Branches
+
+![CI Status](https://github.com/rayhenrique/klgestorpub/actions/workflows/ci.yml/badge.svg?branch=develop)
+![Deploy Status](https://github.com/rayhenrique/klgestorpub/actions/workflows/deploy.yml/badge.svg?branch=main)
+
+- `main`: branch estável, sempre pronta para produção
+- `develop`: integração contínua de features
+- `feature/*`: desenvolvimento de funcionalidades (ex.: `feature/reports`, `feature/cache`, `feature/pdf`)
+- `release/x.y.z` (opcional): preparação de releases
+- `hotfix/*` (opcional): correções emergenciais na produção
+
+## ⚙️ CI/CD com GitHub Actions
+
+- CI (`.github/workflows/ci.yml`):
+  - Executa em `push` para `develop` e `feature/*` e em PR para `main`/`develop`
+  - Passos: checkout, setup PHP 8.2, `composer install`, preparar `.env`, unit tests (`phpunit --testsuite Unit`), code style (`pint --test`), `composer validate`
+- Deploy (`.github/workflows/deploy.yml`):
+  - Executa em `push` para `main`
+  - Faz deploy via SSH para o VPS e roda `composer install`, `php artisan migrate`, e cache de rotas/config/views
+
+### Secrets necessários para Deploy
+- `SSH_PRIVATE_KEY`: chave privada com acesso ao servidor
+- `SSH_HOST`: host do VPS
+- `SSH_USER`: usuário remoto
+
+## 🤝 Guia de Contribuição
+
+1. Crie sua branch a partir de `develop`:
+   - `git checkout develop && git pull`
+   - `git checkout -b feature/<nome-da-feature>`
+2. Siga commits claros (ex.: Conventional Commits: `feat: nova tela de relatórios`) 
+3. Garanta que o CI passe (tests + pint) antes de abrir PR
+4. Abra PR para `develop` com descrição objetiva e checklist
+5. Após merge em `develop`, promova para `main` via release/deploy
+
+## 📦 Como rodar o CI localmente
+
+- `composer install`
+- `cp .env.example .env && php artisan key:generate`
+- `vendor/bin/phpunit --testsuite Unit`
+- `vendor/bin/pint --test`
+
 **Todos os direitos reservados © 2025 KL Gestor Pub v1.4.0**  
 **Desenvolvido por Ray Henrique** | **Email**: rayhenrique@gmail.com
